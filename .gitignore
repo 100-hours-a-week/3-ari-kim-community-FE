@@ -19,3 +19,40 @@ gradle-app.setting
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+
+# 로그 파일 제외
+logs/
+*.log
+!important.log
+
+*.tmp
+
+# 빌드 결과물 제외
+/build/
+*.o
+*.class
+
+# 환경 설정 파일 제외
+.env
+config/local.json
+
+# 패키지 디렉터리
+node_modules/
+npm-debug.log*
+
+# 환경 설정
+.env
+.env.local
+
+# 빌드 결과물
+dist/
+build/
+
+
+# IntelliJ IDEA
+/resources/
+.idea
+
+# Mac OS ###
+.DS_Store
