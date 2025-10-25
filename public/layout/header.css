@@ -1,0 +1,124 @@
+body {
+    font-family: sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    color: #212529;
+}
+
+.container {
+    max-width: 800px; /* 화면이 커져도 최대 너비 800px 유지 */
+    margin: 0 auto; /* 페이지 중앙 정렬 */
+    padding: 0 20px;
+}
+
+
+/*=============== Header =================*/
+
+header {
+    width: 100%;
+    background-color: #ffffff;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #5f6163;
+    max-width: 900px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.header-left,
+.header-right {
+    flex: 1;
+}
+
+.header-center {
+    flex: 1;
+    text-align: center;
+}
+
+.header-right {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.header-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 400;
+    padding: 5px 5px;
+}
+
+/* 뒤로가기 버튼, 프로필 아이콘 숨김 */
+#back-button {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px; 
+    color: #495057;
+    cursor: pointer;
+    padding: 0; 
+    margin-left: -5px; 
+    position: relative; 
+    z-index: 1; 
+}
+
+/* 뒤로가기 버튼 호버 효과 */
+#back-button:hover {
+    color: #212529;
+}
+
+#profile-container {
+    display: none;
+}
+
+/* 드롭다운 메뉴 */
+.profile-container {
+    position: relative;
+}
+
+.user-profile {
+    width: 40px;
+    height: 40px;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    z-index: 1;
+}
+
+/* JS .show 클래스가 추가됐을 경우 */
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 10px 0;
+}
+
+.dropdown-menu a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f1f1f1;
+}

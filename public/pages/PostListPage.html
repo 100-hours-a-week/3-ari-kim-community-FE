@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시물 목록</title>
+    <link rel="stylesheet" href="../../index.css">
+</head>
+<body>
+
+    <div id="header-placeholder"></div>
+
+    <main class="container">
+        <!-- 상단 문구 -->
+        <section class="intro-section">
+            <div class="intro-text">
+                <h2>Ari 커뮤니티 입니다.</h2>
+                <h2>자유롭게 게시글을 작성해 보세요!</h2>
+            </div>
+            <a href="PostCreatePage.html" class="create-post-button">게시글 작성</a>
+        </section>
+
+        <!-- 게시글 목록 -->
+        <section id="post-list"></section>
+
+        <div id="loader" class="loader">
+            <p>loading...</p>
+        </div>
+    </main>
+
+    <script src="../../app.js"></script>
+    <script src="../../index.js"></script>
+</body>
+</html>

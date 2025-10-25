@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" href="../../index.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="container">
+        <div class="form-container">
+            <h2 class="form-title">로그인</h2>
+            <form id="login-form">
+                <!-- 이메일 입력 -->
+                <div class="form-group">
+                    <label for="email">이메일</label>
+                    <input type="email" id="email" placeholder="이메일을 입력하세요">
+                    <p class="helper-text" id="email-helper"></p>
+                </div>
+                <!-- 비밀번호 입력 -->
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" placeholder="비밀번호를 입력하세요">
+                    <p class="helper-text" id="password-helper"></p>
+                </div>
+                
+                <button type="submit" id="login-button" class="form-button" disabled>로그인</button>
+                <a href="SignupPage.html" class="form-link">회원가입</a>
+            </form>
+        </div>
+    </main>
+
+    <script src="../../app.js"></script>
+    <script src="../service/auth.js"></script>
+</body>
+</html>

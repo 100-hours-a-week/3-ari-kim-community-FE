@@ -1,0 +1,251 @@
+/*=============== 공통 요소 ================*/
+body {
+    font-family: sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    color: #212529;
+}
+
+.container {
+    max-width: 800px; /* 화면이 커져도 최대 너비 800px 유지 */
+    margin: 0 auto; /* 페이지 중앙 정렬 */
+    padding: 0 20px;
+}
+
+
+/*==================== 로그인, 회원가입 =====================*/
+.form-container {
+    max-width: 400px;
+    margin: 40px auto;
+    text-align: center;
+}
+
+.form-title {
+    font-size: 28px;
+    margin-bottom: 35px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.helper-text {
+    color: #e03131;
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 1.2em; /* 메시지가 없을 때도 공간 차지 */
+}
+
+.form-button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* 버튼 비활성화 */
+.form-button:disabled {
+    background-color: #ACA0EB;
+    cursor: not-allowed;
+}
+
+/* 버튼 활성화 */
+.form-button:not(:disabled) {
+    background-color: #7F6AEE;
+}
+
+.form-link {
+    display: block;
+    margin-top: 20px;
+    color: #495057;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.form-link:hover {
+    text-decoration: underline;
+}
+
+
+/* ===================== 회원가입 ====================== */
+.profile-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* 실제 input 태그 숨기기 */
+.hidden-input {
+    display: none;
+}
+
+.profile-pic-preview {
+    width: 140px;
+    height: 140px;
+    background-color: #e9ecef;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+    color: #868e96;
+    font-size: 50px;
+    font-weight: 100;
+    transition: background-color 0.2s;
+}
+
+.profile-pic-preview:hover {
+    background-color: #dbdde0;
+}
+
+.profile-pic-preview.has-image span {
+    display: none; 
+}
+
+
+/* ===================== 게시물 목록 ====================== */
+.intro-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 20px; 
+    text-align: center;
+}
+
+.intro-text h2 {
+    font-size: 18px;
+    font-weight: normal;
+    color: #495057;
+    margin: 5px 0;
+}
+
+/* 게시글 작성 버튼 */
+.create-post-button {
+    background-color: #ACA0EB;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    flex-shrink: 0;margin-top: 15px;
+}
+
+.create-post-button:hover {
+    background-color: #7F6AEE;
+}
+
+/* 게시글 아이템 */
+.post-item {
+    display: block;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 5px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s;
+}
+
+.post-item:hover {
+    transform: translateY(-5px); /* 살짝 떠오르는 효과 */
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+}
+
+.post-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.modified-tag {
+    font-size: 12px;
+    color: #868e96;
+    flex-shrink: 0;
+}
+
+.post-date {
+    font-size: 13px;
+    color: #868e96;
+}
+
+.post-meta {
+    display: flex;
+    justify-content: space-between; /* 통계는 왼쪽, 날짜는 오른쪽 */
+    align-items: center;
+    font-size: 13px;
+    color: #868e96;
+    margin-bottom: 20px;
+}
+
+.post-meta-stats span {
+    margin-right: 12px;
+}
+
+.post-footer {
+    border-top: 1px solid #f1f3f5;
+    padding-top: 15px;
+    padding-bottom: 10px;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+}
+
+.author-avatar {
+    width: 28px;
+    height: 28px;
+    background-color: #e9ecef;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.author-name {
+    font-size: 14px;
+    color: #495057;
+}
+
+/* 인피니티 스크롤 */
+.loader {
+    text-align: center;
+    padding: 20px;
+    color: #868e96;
+}
