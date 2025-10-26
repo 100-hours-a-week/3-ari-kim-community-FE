@@ -469,3 +469,26 @@ body {
     background-color: #D6CFFC;
     color: #343a40;
 }
+
+
+/* ===================== 게시물 작성/수정 ====================== */
+
+/* 내용 입력 */
+.form-group textarea {
+    width: 100%;
+    min-height: 200px; /* 최소 높이 */
+    padding: 14px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: sans-serif; /* 폰트 통일 */
+    box-sizing: border-box;
+    resize: vertical; /* 세로 크기만 조절 가능 */
+}
+
+/* 이미지 파일 입력란 */
+.form-group input[type="file"] {
+    font-size: 14px;
+    padding: 0;
+    border: none;
+}

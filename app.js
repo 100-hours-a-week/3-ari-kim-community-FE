@@ -32,7 +32,7 @@ function setupHeaderUI() {
     if (currentPage.includes('SignupPage.html')) {
         backButton.style.display = 'block';
         backButton.addEventListener('click', () => {
-            window.location.href = 'LoginPage.html';
+            window.location.href = '../login/LoginPage.html';
         });
     }
     // 게시글 상세, 작성 페이지인 경우, 프로필 아이콘/뒤로가기(게시물 목록) 버튼 활성화
@@ -40,7 +40,7 @@ function setupHeaderUI() {
         backButton.style.display = 'block';
         profileContainer.style.display = 'block';
         backButton.addEventListener('click', () => {
-            window.location.href = 'PostListPage.html';
+            window.location.href = '../postList/PostListPage.html';
         });
     }
     // 게시글 수정 페이지인 경우, 프로필 아이콘/뒤로가기(게시물 상세) 버튼 활성화
@@ -50,9 +50,9 @@ function setupHeaderUI() {
         const urlParams = new URLSearchParams(window.location.search);
         const postId = urlParams.get('id');
         backButton.addEventListener('click', () => {if (postId) {
-            window.location.href = `PostDetailPage.html?id=${postId}`;
+            window.location.href = `../postDetail/PostDetailPage.html?id=${postId}`;
             } else {
-            window.location.href = 'PostListPage.html';
+            window.location.href = '../postList/PostListPage.html';
             }
         });
     }
