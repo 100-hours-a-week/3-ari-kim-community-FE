@@ -472,7 +472,6 @@ body {
 
 
 /* ===================== 게시물 작성/수정 ====================== */
-
 /* 내용 입력 */
 .form-group textarea {
     width: 100%;
@@ -491,4 +490,19 @@ body {
     font-size: 14px;
     padding: 0;
     border: none;
+}
+
+/* 기존 이미지 정보 표시 영역 */
+.existing-image-info {
+    font-size: 13px;
+    color: #868e96;
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.existing-image-info #existing-image-name {
+    font-weight: bold;
+    color: #495057;
 }
