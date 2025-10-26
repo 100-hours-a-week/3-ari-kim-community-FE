@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 특정 게시물 클릭 시 상세 페이지로 이동
             const postLink = document.createElement('a');
-            postLink.href = `PostDetailPage.html?id=${post.id}`; // 상세 페이지로 링크
+            postLink.href = `../postDetail/PostDetailPage.html?id=${post.id}`; // 상세 페이지로 링크
             postLink.className = 'post-item';
 
             // 제목 26자 제한

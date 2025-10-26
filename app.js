@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 공통 header 적용
 function loadHeader() {
-    fetch('../layout/header.html')
+    fetch('../../layout/header.html')
         .then(response => response.text())
         .then(data => {
             document.getElementById('header-placeholder').innerHTML = data;
@@ -14,7 +14,7 @@ function loadHeader() {
             
             link.rel = 'stylesheet'
             link.type = 'text/css';
-            link.href = '../layout/header.css';
+            link.href = '../../layout/header.css';
             
             head.appendChild(link);
 
