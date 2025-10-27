@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 공통 header 적용
 function loadHeader() {
-    fetch('../../layout/header.html')
+    fetch('/layout/header.html')
         .then(response => response.text())
         .then(data => {
             document.getElementById('header-placeholder').innerHTML = data;
@@ -14,7 +14,7 @@ function loadHeader() {
             
             link.rel = 'stylesheet'
             link.type = 'text/css';
-            link.href = '../../layout/header.css';
+            link.href = '/layout/header.css';
             
             head.appendChild(link);
 
@@ -29,32 +29,45 @@ function setupHeaderUI() {
     const profileContainer = document.getElementById('profile-container');
 
     // 회원가입 페이지인 경우, 뒤로가기(로그인 페이지) 버튼 활성화
-    if (currentPage.includes('SignupPage.html')) {
+    if (currentPage.includes('/signup')) {
         backButton.style.display = 'block';
         backButton.addEventListener('click', () => {
-            window.location.href = '../login/LoginPage.html';
+            window.location.href = '/login';
         });
     }
     // 게시글 상세, 작성 페이지인 경우, 프로필 아이콘/뒤로가기(게시물 목록) 버튼 활성화
-    else if (currentPage.includes('PostDetailPage.html') || currentPage.includes('PostCreatePage.html')) {
+    else if (currentPage.includes('/post/create')) {
         backButton.style.display = 'block';
         profileContainer.style.display = 'block';
         backButton.addEventListener('click', () => {
-            window.location.href = '../postList/PostListPage.html';
+            window.location.href = '/';
         });
     }
     // 게시글 수정 페이지인 경우, 프로필 아이콘/뒤로가기(게시물 상세) 버튼 활성화
-    else if (currentPage.includes('PostUpdatePage.html')) {
+    else if (currentPage.includes('/post/edit')) {
         backButton.style.display = 'block';
         profileContainer.style.display = 'block';
         const urlParams = new URLSearchParams(window.location.search);
         const postId = urlParams.get('id');
-        backButton.addEventListener('click', () => {if (postId) {
+        backButton.addEventListener('click', () => {
+            if (postId) {
             window.location.href = `../postDetail/PostDetailPage.html?id=${postId}`;
             } else {
             window.location.href = '../postList/PostListPage.html';
             }
         });
+    }
+    // 상세 페이지 
+    else if (currentPage.startsWith('/post/')) { 
+        backButton.style.display = 'block';
+        profileContainer.style.display = 'block';
+        backButton.addEventListener('click', () => {
+            window.location.href = '/'; // (수정)
+        });
+    }
+    // 로그인 페이지 
+    else if (currentPage.includes('/login')) {
+        // 프로필 아이콘 숨김 (아무것도 안 함)
     }
     // 그 외 모든 페이지, 프로필 아이콘 활성화
     else {
