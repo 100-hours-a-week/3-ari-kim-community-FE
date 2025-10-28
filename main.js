@@ -10,22 +10,15 @@ app.use('/index.css', express.static(path.join(__dirname, 'index.css')));
 
 // --- 페이지 라우팅 ---
 // 루트 (/) 접속 시 -> 게시물 목록 페이지
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/pages/postList/PostListPage.html'));
-});
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postList/PostListPage.html')));
 
-// /login 접속 시 -> 로그인 페이지
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/pages/login/LoginPage.html'));
-});
-
-// (모든 페이지에 대해 app.get() 라우트 추가)
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/login/LoginPage.html')));
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/signup/SignupPage.html')));
 app.get('/post/create', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postCreate/PostCreatePage.html')));
-app.get('/post/edit/:id', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postUpdate/PostUpdatePage.html')));
+app.get('/post/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postUpdate/PostUpdatePage.html')));
 app.get('/post/:id', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postDetail/PostDetailPage.html')));
-app.get('/user/edit', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/userUpdate/UserUpdatePage.html')));
-app.get('/user/password', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/passwordUpdate/PasswordUpdatePage.html')));
+app.get('/user/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/userUpdate/UserUpdatePage.html')));
+app.get('/user/:id/password', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/passwordUpdate/PasswordUpdatePage.html')));
 
 // --- 서버 실행 ---
 app.listen(port, () => {
