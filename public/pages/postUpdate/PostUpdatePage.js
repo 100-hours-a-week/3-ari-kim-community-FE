@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. DOM 요소 ---
+    // --- DOM 요소 ---
     const postForm = document.getElementById('post-update-form');
     const postTitle = document.getElementById('post-title');
     const postContent = document.getElementById('post-content');
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let imageFile = null; // 새로 업로드할 이미지 파일
     let postId = null; // 수정할 게시글 ID
 
-    // --- 2. 버튼 활성화 로직 ---
+    // --- 버튼 활성화 로직 ---
     function updateButtonState() {
         const title = postTitle.value.trim();
         const content = postContent.value.trim();
@@ -23,25 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.disabled = !(title.length > 0 && content.length > 0);
     }
 
-    // --- 3. (가상) 기존 게시글 데이터 불러오기 ---
+    // --- 기존 게시글 데이터 불러오기 ---
     async function fetchPostData(id) {
-        // (참고) 실제 개발 시:
-        // const response = await fetch(`/api/posts/${id}`);
-        // if (!response.ok) throw new Error('게시글을 불러올 수 없습니다.');
-        // return await response.json();
-
-        // --- 테스트용 임시 코드 ---
-        console.log(`[테스트 모드] ID: ${id} 게시글 데이터 불러오는 중...`);
-        await new Promise(resolve => setTimeout(resolve, 300));
-        return {
-            title: `테스트 게시글 ${id}`,
-            content: `게시글 ${id}의 기존 본문 내용입니다.`,
-            imageName: 'existing_image.png' // (Req 3)
-        };
-        // --- 테스트용 임시 코드 끝 ---
+        const response = await fetch(`/api/posts/${id}`);
+        if (!response.ok) throw new Error('게시글을 불러올 수 없습니다.');
+        return await response.json();
     }
 
-    // --- 4. 폼에 기존 데이터 채우기 ---
+    // --- 폼에 기존 데이터 채우기 ---
     async function populateForm() {
         // URL에서 게시글 ID 가져오기
         const urlParams = new URLSearchParams(window.location.search);
@@ -70,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 5. 이벤트 리스너 ---
+    // --- 이벤트 리스너 ---
     
     // 실시간 유효성 검사 및 버튼 활성화
     postTitle.addEventListener('input', updateButtonState);
@@ -106,22 +95,16 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('image', imageFile);
         }
 
-        // (가상) 서버 API 호출 (PUT 또는 PATCH 메서드 사용)
+        // 서버 API 호출 (PUT 또는 PATCH 메서드 사용)
         try {
-            // (참고) 실제 개발 시:
-            // const response = await fetch(`/api/posts/${postId}`, {
-            //     method: 'PUT', // 또는 'PATCH'
-            //     body: formData
-            //     // headers: { 'Authorization': `Bearer ${token}` }
-            // });
-            // if (!response.ok) throw new Error('수정에 실패했습니다.');
+            const response = await fetch(`/api/posts/${postId}`, {
+                method: 'PUT', // 또는 'PATCH'
+                body: formData
+                // headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('수정에 실패했습니다.');
 
-            // --- 테스트용 임시 코드 ---
-            console.log('서버로 전송될 (수정) 데이터:', { title, content, imageFile });
-            alert('게시글이 성공적으로 수정되었습니다.');
-            // --- 테스트용 임시 코드 끝 ---
-
-            // (Req 4) 수정 성공 시, 해당 게시글의 상세 페이지로 이동
+            // 수정 성공 시, 해당 게시글의 상세 페이지로 이동
             setTimeout(() => {
                 window.location.href = `../postDetail/PostDetailPage.html?id=${postId}`;
             }, 1000); // 1초 후 이동 (토스트 확인 시간)
@@ -132,6 +115,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 6. 페이지 초기화 실행 ---
+    // --- 페이지 초기화 실행 ---
     populateForm();
 });

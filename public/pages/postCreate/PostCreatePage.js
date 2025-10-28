@@ -61,27 +61,21 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('image', imageFile);
         }
 
-        // (가상) 서버 API 호출
-        // (참고) 실제 개발 시, 이 로직은 service/post.js 등으로 분리하는 것이 좋습니다.
+        // (서버 API 호출
         try {
-            // const response = await fetch('/api/posts', {
-            //     method: 'POST',
-            //     body: formData
-            //     // (참고) 토큰이 필요하면 헤더에 추가
-            //     // headers: { 'Authorization': `Bearer ${token}` }
-            // });
+            const response = await fetch('/api/posts', {
+                method: 'POST',
+                body: formData
+            });
 
-            // if (response.ok) {
-            //     alert('게시글이 성공적으로 등록되었습니다.');
-            //     window.location.href = 'PostListPage.html'; // 목록 페이지로 이동
-            // } else {
-            //     const error = await response.json();
-            //     alert(`등록 실패: ${error.message}`);
-            // }
+            if (response.ok) {
+                alert('게시글이 성공적으로 등록되었습니다.');
+                window.location.href = 'PostListPage.html'; // 목록 페이지로 이동
+            } else {
+                const error = await response.json();
+                alert(`등록 실패: ${error.message}`);
+            }
 
-            // --- 테스트용 임시 코드 ---
-            console.log('서버로 전송될 데이터:', { title, content, imageFile });
-            alert('게시글이 성공적으로 등록되었습니다. (테스트)');
             window.location.href = '../postDetail/PostDetailPage.html?id=${post.id}';
 
         } catch (error) {

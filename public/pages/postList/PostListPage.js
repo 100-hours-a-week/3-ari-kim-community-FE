@@ -1,4 +1,4 @@
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname.includes('PostListPage.html')) { 
@@ -17,13 +17,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return num;
         }
 
-        // 2. 실제 서버에서 게시글 데이터를 가져오는 함수 (fetch 사용)
+        // 서버에서 게시글 데이터를 가져옴
         async function fetchPosts(page) {
             if (!hasMorePosts) return []; // 더이상 게시글이 없으면 빈 배열 반환
-
             isLoading = true;
             loader.style.display = 'block';
-/*
+
             try {
                 // 페이지 번호와 한 페이지에 보여줄 게시글 수를 쿼리 파라미터로 전달
                 const response = await fetch(`/posts?page=${page}&limit=20`);
@@ -54,40 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     loader.style.display = 'none';
                 }
             }
-        */
-            console.log(`[테스트 모드] ${page}페이지 데이터 불러오는 중...`);
-        // 0.5초간 가짜 로딩 시간을 줍니다.
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-        // 10개의 가짜 게시글 데이터를 만듭니다.
-            const tempPosts = [];
-            for (let i = 1; i <= 10; i++) {
-                const id = (page - 1) * 10 + i;
-                tempPosts.push({
-                    id: id,
-                    title: `테스트 게시글 ${id} (제목 26자 넘으면 잘림 테스트 Lorem ipsum dolor sit amet)`,
-                    date: '2025-10-21 14:30:00', // (수정) createdAt -> date
-                    likes: id * 1500,           // (수정) likesCount -> likes
-                    comments: id * 5,         // (수정) commentsCount -> comments
-                    views: id * 12000,          // (수정) 이름 동일
-                    author: `테스트작성자${id}`,
-                    is_modified: i % 3 === 0 ? 1 : 0
-                });
-            }
-        
-            isLoading = false;
-            loader.style.display = 'none';
-
-        // 3페이지까지만 데이터가 있는 척 (인피니티 스크롤 테스트용)
-            if (page >= 3) {
-                hasMorePosts = false;
-                loader.style.display = 'none';
-            }
-
-            return tempPosts; // 가짜 데이터를 반환합니다.
-
-
-
         }
     
         // 게시글 요소를 HTML로 만들어 반환

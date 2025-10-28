@@ -1,4 +1,4 @@
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:8080/api';
 import { validateEmail, validatePassword, validatePasswordCheck, validateNickname } from '../../utils/validation.js';
 
 document.addEventListener('DOMContentLoaded', function() {

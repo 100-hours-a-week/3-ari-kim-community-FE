@@ -106,25 +106,17 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('profilePic', profilePicFile);
         }
 
-        // (가상) 서버 API 호출
+        // 서버 API 호출
         try {
-            // (참고) 실제 개발 시:
-            // const response = await fetch('/api/user/profile', {
-            //     method: 'PUT', // 또는 'PATCH'
-            //     body: formData
-            //     // headers: { 'Authorization': `Bearer ${token}` }
-            // });
-            // if (!response.ok) {
-            //     const errorData = await response.json();
-            //     throw errorData; // (예: { field: 'nickname', message: '중복된 닉네임 입니다.' })
-            // }
-
-            // --- 테스트용 임시 코드 ---
-            console.log('서버로 전송될 (수정) 데이터:', {
-                nickname: nicknameInput.value,
-                profilePicFile
+            const response = await fetch('/api/user/profile', {
+                method: 'PUT', // 또는 'PATCH'
+                body: formData
+                // headers: { 'Authorization': `Bearer ${token}` }
             });
-            // --- 테스트용 임시 코드 끝 ---
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw errorData; // (예: { field: 'nickname', message: '중복된 닉네임 입니다.' })
+            }
 
             // 수정 완료
             alert('수정 완료'); // (요청 사항) alert 사용
@@ -139,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 7. 회원 탈퇴 로직 ---
+    // --- 회원 탈퇴 로직 ---
     deleteAccountLink.addEventListener('click', (e) => {
         e.preventDefault();
         deleteAccountModal.classList.remove('modal-hidden');
@@ -150,18 +142,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     confirmDeleteBtn.addEventListener('click', async () => {
-        // (가상) 서버 API 호출
+        // 서버 API 호출
         try {
-            // (참고) 실제 개발 시:
-            // const response = await fetch('/api/user/account', {
-            //     method: 'DELETE'
-            //     // headers: { 'Authorization': `Bearer ${token}` }
-            // });
-            // if (!response.ok) throw new Error('탈퇴 처리에 실패했습니다.');
-
-            // --- 테스트용 임시 코드 ---
-            console.log('회원 탈퇴 API 호출...');
-            // --- 테스트용 임시 코드 끝 ---
+            const response = await fetch('/api/user/account', {
+                method: 'DELETE'
+                // headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('탈퇴 처리에 실패했습니다.');
             
             alert('회원 탈퇴가 완료되었습니다.');
             window.location.href = '../login/LoginPage.html'; // 로그인 페이지로 이동
@@ -171,6 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 8. 페이지 초기화 실행 ---
+    // --- 페이지 초기화 실행 ---
     populateForm();
 });

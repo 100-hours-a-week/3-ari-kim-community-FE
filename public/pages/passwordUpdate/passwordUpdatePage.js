@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     passwordInput.addEventListener('input', validateInputs);
     passwordCheckInput.addEventListener('input', validateInputs);
 
-    // --- 6. (Req 2) 폼 제출 로직 ---
+    // --- 폼 제출 로직 ---
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
         
@@ -68,21 +68,16 @@ document.addEventListener('DOMContentLoaded', () => {
         validateInputs();
         if (submitButton.disabled) return; // 버튼이 비활성화면 중단
 
-        // (가상) 서버 API 호출
+        // 서버 API 호출
         try {
-            // (참고) 실제 개발 시:
-            // const response = await fetch('/api/user/password', {
-            //     method: 'PUT',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ newPassword: passwordInput.value })
-            // });
-            // if (!response.ok) throw new Error('비밀번호 변경에 실패했습니다.');
+            const response = await fetch('/api/user/password', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ newPassword: passwordInput.value })
+            });
+            if (!response.ok) throw new Error('비밀번호 변경에 실패했습니다.');
 
-            // --- 테스트용 임시 코드 ---
-            console.log('새 비밀번호 전송:', passwordInput.value);
-            // --- 테스트용 임시 코드 끝 ---
-
-            // (Req 2) 수정 성공 시 (alert 사용)
+            // 수정 성공 시 (alert 사용)
             alert('수정 완료');
             
             // (선택) 수정 완료 후, 회원정보 수정 페이지로 이동
