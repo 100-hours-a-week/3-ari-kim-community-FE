@@ -1,8 +1,6 @@
 const API_BASE_URL = 'http://localhost:8080/api';
-import { validateEmail, validatePassword } from '../../utils/validation.js';
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname.includes('LoginPage.html')) {
         
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
@@ -41,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 // 서버에 데이터 전송
-                fetch('${API_BASE_URL}/auth', {
+                fetch(`${API_BASE_URL}/auth`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json' // JSON 형식으로 전송
@@ -51,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => {
                     // 응답 성공(ok)
                     if (response.ok) { 
-                        window.location.href = 'PostListPage.html'; // 게시물 목록 페이지로 이동
+                        window.location.href = 'posts'; // 게시물 목록 페이지로 이동
                     }
                     // 응답 실패
                     else {
@@ -65,5 +63,4 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-    }
 });
