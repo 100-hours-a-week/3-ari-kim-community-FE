@@ -1,5 +1,6 @@
+const API_BASE_URL = 'http://localhost:8080/api';
 // 1. (경로 확인) utils/validate.js에서 유효성 검사 함수 import
-import { validatePassword } from '../../utils/validate.js';
+import { validatePassword } from '/utils/validation.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -45,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
             validationStatus.passwordCheck = true;
         }
 
-        // 3. (Req 1) 확인 필드에 값이 있는데, 첫 번째 비밀번호와 일치하지 않으면
+        // 3. 확인 필드에 값이 있는데, 첫 번째 비밀번호와 일치하지 않으면
         //    첫 번째 비밀번호 헬퍼 텍스트도 변경
         if (validationStatus.password && !validationStatus.passwordCheck && passwordCheck !== "") {
             passwordHelper.textContent = "비밀번호 확인과 다릅니다.";
@@ -70,10 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 서버 API 호출
         try {
-            const response = await fetch('/api/user/password', {
-                method: 'PUT',
+            const response = await fetch(`${API_BASE_URL}/users/${userId}/password`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ newPassword: passwordInput.value })
+                body: JSON.stringify({ password: passwordInput.value, password_check: passwordCheckInput.value })
             });
             if (!response.ok) throw new Error('비밀번호 변경에 실패했습니다.');
 
@@ -81,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('수정 완료');
             
             // (선택) 수정 완료 후, 회원정보 수정 페이지로 이동
-            window.location.href = '../userUpdate/UserUpdatePage.html';
+            window.location.href = `/users/${userId}/edit`;
 
         } catch (error) {
             alert(error.message);

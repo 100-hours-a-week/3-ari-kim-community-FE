@@ -44,7 +44,7 @@ function setupHeaderUI() {
         });
     }
     // 게시글 수정 페이지인 경우, 프로필 아이콘/뒤로가기(게시물 상세) 버튼 활성화
-    else if (currentPage.includes('/post/edit')) {
+    else if (currentPage.includes('/post/:id/edit')) {
         backButton.style.display = 'block';
         profileContainer.style.display = 'block';
         const urlParams = new URLSearchParams(window.location.search);
@@ -58,7 +58,7 @@ function setupHeaderUI() {
         });
     }
     // 상세 페이지 
-    else if (currentPage.startsWith('/post/')) { 
+    else if (currentPage.startsWith('/posts/:id')) { 
         backButton.style.display = 'block';
         profileContainer.style.display = 'block';
         backButton.addEventListener('click', () => {

@@ -1,10 +1,10 @@
+const API_BASE_URL = 'http://localhost:8080/api';
+
 // HTML 문서가 모두 로드되면 실행
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. 전역 변수 및 DOM 요소 ---
-    
-    // (가정) 현재 로그인한 사용자 ID (테스트용)
-    const currentUserId = 1; 
+    // localStorage에서 userId를 가져옴
+    const currentUserId = parseInt(localStorage.getItem('userId'), 10);
 
     // DOM 요소
     const postTitle = document.getElementById('post-title');
@@ -36,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let postId = null; // 현재 게시물 ID
     let isEditingCommentId = null; // 수정 중인 댓글 ID
     
-    // --- 2. 헬퍼 함수 ---
+
+    // --- 헬퍼 함수 ---
 
     // 숫자 포맷팅
     function formatNumber(num) {
@@ -48,50 +49,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 데이터 로드 및 렌더링 ---
 
-    // (가상) 서버에서 게시글 상세 데이터 가져오기 (테스트용)
     async function fetchPostDetails(id) {
-        console.log(`[테스트 모드] ID: ${id} 게시글 데이터 불러오는 중...`);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        return {
-            post: {
-                id: id,
-                title: `테스트 게시글 ${id}`,
-                content: `게시글 ${id}의 본문입니다. \n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. \nPraesent interdum felis ac elit ultrices, in tincidunt libero...`,
-                date: '2025-10-21 14:30:00',
-                likes: 1230,
-                views: 15000,
-                author: { id: 1, name: '테스트작성자1' }, 
-                is_modified: 0,
-                likedByMe: true // 내가 좋아요 눌렀는지 여부
-            },
-            comments: [
-                { id: 101, author: { id: 2, name: '유저2' }, date: '2025-10-21 15:00:00', content: '첫 번째 댓글입니다.' },
-                { id: 102, author: { id: 1, name: '테스트작성자1' }, date: '2025-10-21 15:05:00', content: '두 번째 댓글입니다. (내 댓글)' },
-                { id: 103, author: { id: 3, name: '유저3' }, date: '2025-10-21 15:10:00', content: '세 번째 댓글입니다.' },
-            ]
-        };
+        console.log(`[API] ID: ${id} 게시글 데이터 불러오는 중...`);
+        try {
+            // API 호출 (GET /api/posts/{postId})
+            const response = await fetch(`${API_BASE_URL}/posts/${id}`);
+            const apiResponse = await response.json(); 
+            if (!response.ok || !apiResponse.success) {
+                throw new Error(apiResponse.message || `게시글을 불러올 수 없습니다.`);
+            }
+            const post = apiResponse.data; 
+            return post;
+
+        } catch (error) {
+            console.error('fetchPostDetails 오류:', error);
+            alert(error.message);
+            window.location.href = '/posts'; 
+            return null;
+        }
     }
     
     // 게시글 내용 렌더링
     function renderPost(post) {
         postTitle.textContent = post.title;
-        postAuthor.textContent = post.author.name;
-        postDate.textContent = new Date(post.date).toLocaleString();
+        postAuthor.textContent = post.nickname; 
+        postDate.textContent = new Date(post.createdAt).toLocaleString(); 
         postContent.textContent = post.content;
         
-        likeCount.textContent = formatNumber(post.likes);
-        viewCount.textContent = formatNumber(post.views);
-        
-        //  좋아요 버튼 상태 설정
-        updateLikeButton(post.likedByMe, post.likes);
+        if (postImage && post.imageUrl) {
+            postImage.src = post.imageUrl;
+            postImage.style.display = 'block'; 
+        } else if (postImage) {
+            postImage.style.display = 'none'; 
+        }
 
-        // 본인 글일 때만 수정/삭제 버튼 표시
-        if (post.author.id === currentUserId) {
+        if(likeCount) likeCount.textContent = formatNumber(post.likeCount);
+        if(viewCount) viewCount.textContent = formatNumber(post.viewCount);
+        if(commentCount) commentCount.textContent = formatNumber(post.commentCount);
+        
+        // (가정) GetPostDetailResponse DTO에 "user": { "userId": ... } 구조 포함
+        if (post.user && post.user.userId === currentUserId) {
             postActions.style.display = 'flex';
         }
     }
 
+    /*
     // 댓글 목록 렌더링
     function renderComments(comments) {
         commentListContainer.innerHTML = ''; // 기존 댓글 비우기
@@ -229,25 +231,37 @@ document.addEventListener('DOMContentLoaded', () => {
         commentSubmitBtn.textContent = '댓글 수정';
         commentSubmitBtn.disabled = false;
         commentTextarea.focus(); // 텍스트 영역으로 포커스
-    }
+    }*/
+
 
     // --- 모달 관련 로직 ---
     
     // 게시글 삭제 모달 보이기
-    deletePostBtn.addEventListener('click', () => {
-        deletePostModal.classList.remove('modal-hidden');
-    });
-    // 게시글 삭제 - 확인
-    confirmPostDelete.addEventListener('click', () => {
-        // (가상) fetch(`/api/posts/${postId}`, { method: 'DELETE' })
-        alert('게시글이 삭제되었습니다.');
-        window.location.href = 'PostListPage.html'; // 목록으로 이동
-    });
+    deletePostBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/posts/${postId}`, { 
+                method: 'DELETE' 
+            });
+    
+            if (!response.ok) { 
+                throw new Error('게시글 삭제에 실패했습니다.');
+            }
+    
+            alert('게시글이 삭제되었습니다.');
+            window.location.href = '/posts'; 
+    
+        } catch (error) {
+            console.error('게시글 삭제 오류:', error);
+            alert(error.message);
+            deletePostModal.classList.add('modal-hidden'); 
+    }
+});
     // 게시글 삭제 - 취소
     cancelPostDelete.addEventListener('click', () => {
         deletePostModal.classList.add('modal-hidden');
     });
 
+    /*
     // 댓글 삭제 모달 보이기
     function showDeleteCommentModal(commentId) {
         // 모달에 삭제할 댓글 ID 저장
@@ -269,28 +283,35 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelCommentDelete.addEventListener('click', () => {
         deleteCommentModal.classList.add('modal-hidden');
     });
+*/
 
-    // --- 5. 페이지 초기화 ---
+    // --- 페이지 초기화 ---
     async function initPage() {
-        // 1. URL에서 게시글 ID 가져오기
+        // URL에서 게시글 ID 가져오기
         const urlParams = new URLSearchParams(window.location.search);
         postId = urlParams.get('id');
         
         if (!postId) {
             alert('게시글 ID가 없습니다.');
-            window.location.href = '../postList/PostListPage.html';
+            window.location.href = '/posts';
+            return;
+        }
+        if (!currentUserId) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/login'; 
             return;
         }
 
-        // 2. 데이터 로드 및 렌더링
-        const data = await fetchPostDetails(postId);
-        renderPost(data.post);
-        renderComments(data.comments);
-        
-        // 수정 버튼에 ID 연결
-        editPostBtn.addEventListener('click', () => {
-            window.location.href = `../postUpdate/PostUpdatePage.html?id=${postId}`;
-        });
+        // 데이터 로드 및 렌더링
+        const post = await fetchPostDetails(postId); // 수정된 함수 호출
+
+        if (post) { 
+            renderPost(post);
+            
+            editPostBtn.addEventListener('click', () => {
+                window.location.href = `/posts/${postId}/edit`; 
+            });
+        }
     }
 
     initPage(); // 페이지 시작

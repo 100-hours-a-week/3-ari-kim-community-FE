@@ -9,16 +9,14 @@ app.use('/app.js', express.static(path.join(__dirname, 'app.js')));
 app.use('/index.css', express.static(path.join(__dirname, 'index.css')));
 
 // --- 페이지 라우팅 ---
-// 루트 (/) 접속 시 -> 게시물 목록 페이지
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postList/PostListPage.html')));
-
+app.get('/posts', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postList/PostListPage.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/login/LoginPage.html')));
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/signup/SignupPage.html')));
-app.get('/post/create', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postCreate/PostCreatePage.html')));
-app.get('/post/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postUpdate/PostUpdatePage.html')));
-app.get('/post/:id', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postDetail/PostDetailPage.html')));
-app.get('/user/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/userUpdate/UserUpdatePage.html')));
-app.get('/user/:id/password', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/passwordUpdate/PasswordUpdatePage.html')));
+app.get('/posts/create', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postCreate/PostCreatePage.html')));
+app.get('/posts/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postUpdate/PostUpdatePage.html')));
+app.get('/posts/:id', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postDetail/PostDetailPage.html')));
+app.get('/users/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/userUpdate/UserUpdatePage.html')));
+app.get('/users/:id/password', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/passwordUpdate/PasswordUpdatePage.html')));
 
 // --- 서버 실행 ---
 app.listen(port, () => {

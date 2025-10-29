@@ -1,4 +1,5 @@
-// HTML 문서가 모두 로드되면 실행
+const API_BASE_URL = 'http://localhost:8080/api';
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. DOM 요소 ---
@@ -58,25 +59,24 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('title', title);
         formData.append('content', content);
         if (imageFile) {
-            formData.append('image', imageFile);
+            formData.append('imageUrl', imageFile);
         }
 
         // (서버 API 호출
         try {
-            const response = await fetch('/api/posts', {
+            const response = await fetch(`${API_BASE_URL}/posts`, {
                 method: 'POST',
                 body: formData
             });
 
             if (response.ok) {
+                const newPost = await response.json();
                 alert('게시글이 성공적으로 등록되었습니다.');
-                window.location.href = 'PostListPage.html'; // 목록 페이지로 이동
+                window.location.href = `/posts/${newPost.id}`;
             } else {
                 const error = await response.json();
                 alert(`등록 실패: ${error.message}`);
             }
-
-            window.location.href = '../postDetail/PostDetailPage.html?id=${post.id}';
 
         } catch (error) {
             console.error('게시글 등록 중 오류 발생:', error);

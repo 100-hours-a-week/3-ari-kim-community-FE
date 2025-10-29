@@ -1,13 +1,14 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname.includes('PostListPage.html')) { 
+    if (window.location.pathname === '/posts') { 
 
         const postListContainer = document.getElementById('post-list');
         const loader = document.getElementById('loader');
-        let currentPage = 1; // 현재 페이지 번호
-        let isLoading = false; // 로딩 중복 방지
-        let hasMorePosts = true; // 더 불러올 게시글이 있는지 여부
+
+        let currentCursorId = null; 
+        let isLoading = false; 
+        let hasMorePosts = true;
 
         // 숫자 포맷팅 함수 (1000 -> 1k)
         function formatNumber(num) {
@@ -18,37 +19,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // 서버에서 게시글 데이터를 가져옴
-        async function fetchPosts(page) {
-            if (!hasMorePosts) return []; // 더이상 게시글이 없으면 빈 배열 반환
+        async function fetchPosts(cursorId) {
             isLoading = true;
             loader.style.display = 'block';
 
             try {
-                // 페이지 번호와 한 페이지에 보여줄 게시글 수를 쿼리 파라미터로 전달
-                const response = await fetch(`/posts?page=${page}&limit=20`);
-
-                // 응답 실패
-                if (!response.ok) {
-                    throw new Error('서버에서 게시글을 불러오는데 실패했습니다.');
+                const url = new URL(`${API_BASE_URL}/posts`);
+                url.searchParams.append('size', '20'); // 컨트롤러의 기본값
+                if (cursorId) { // 첫 페이지 로드가 아닐 때만 cursorId 추가
+                    url.searchParams.append('cursorId', cursorId);
                 }
-                const posts = await response.json();
 
-                // 다음 페이지가 없을 경우
-                if (posts.length < 10) {
-                    hasMorePosts = false;
-                    loader.style.display = 'none';
+                const response = await fetch(url);
+                const apiResponse = await response.json();
+
+                if (!response.ok || !apiResponse.success) {
+                    throw new Error(apiResponse.message || '서버에서 게시글을 불러오는데 실패했습니다.');
+                }
+
+                const slice = apiResponse.data; // slice 객체 (from Spring Data)
+                const posts = slice.content;    // 실제 게시글 배열
+
+                // Slice의 'last' 프로퍼티로 다음 페이지 여부 확인
+                hasMorePosts = !slice.last;
+
+                if (!hasMorePosts) {
+                    loader.style.display = 'none'; // 더 이상 로드할 게 없으면 로더 숨김
                 }   
+                
+                // 다음 요청에 사용할 '커서 ID' 업데이트
+                if (posts.length > 0) {
+                    // (가정) GetPostListResponse DTO에 postId 필드가 있다고 가정
+                    currentCursorId = posts[posts.length - 1].postId; 
+                }
                 return posts;
 
                 // 에러 발생
             } catch (error) {
                 console.error('게시글 로딩 중 오류 발생:', error);
                 loader.innerHTML = '<p>게시글을 불러올 수 없습니다.</p>';
+                hasMorePosts = false;
                 return [];
 
             } finally {
                 isLoading = false;
-                // hasMorePosts가 false가 아닐 때만 로더를 숨김
                 if (hasMorePosts) {
                     loader.style.display = 'none';
                 }
@@ -60,14 +74,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 특정 게시물 클릭 시 상세 페이지로 이동
             const postLink = document.createElement('a');
-            postLink.href = `../postDetail/PostDetailPage.html?id=${post.id}`; // 상세 페이지로 링크
+            postLink.href = `/posts/${post.postId}`;
             postLink.className = 'post-item';
 
             // 제목 26자 제한
             const truncatedTitle = post.title.length > 26 ? post.title.substring(0, 26) + '...' : post.title;
         
             // is_modified가 1일 때만 (수정됨) 태그를 생성
-            const modifiedTag = post.is_modified === 1 ? '<span class="modified-tag">(수정됨)</span>' : '';
+            const modifiedTag = post.is_modified ? '<span class="modified-tag">(수정됨)</span>' : '';
             
             // HTML 변환 
             postLink.innerHTML = `
@@ -77,16 +91,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="post-meta">
                     <div class="post-meta-stats">
-                        <span>좋아요 ${formatNumber(post.likes)}</span>
-                        <span>댓글 ${formatNumber(post.comments)}</span>
-                        <span>조회수 ${formatNumber(post.views)}</span>
+                        <span>좋아요 ${formatNumber(post.likeCount)}</span>
+                        <span>댓글 ${formatNumber(post.commentCount)}</span>
+                        <span>조회수 ${formatNumber(post.viewCount)}</span>
                     </div>
                     <span class="post-date">${new Date(post.date).toLocaleString()}</span>
                 </div>
                 <div class="post-footer">
                     <div class="post-author">
                         <div class="author-avatar"></div>
-                        <span class="author-name">${post.author}</span>
+                        <span class="author-name">${post.nickname}</span>
                     </div>
                 </div>`;
             return postLink;
@@ -94,29 +108,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 추가 게시물 로드
         async function loadMorePosts() {
-            if (isLoading) return; // 이미 로딩 중이면 실행 안 함
-
-            const posts = await fetchPosts(currentPage);
+            const posts = await fetchPosts(currentCursorId); 
             posts.forEach(post => {
                 const postElement = createPostElement(post);
                 postListContainer.appendChild(postElement);
             });
-            currentPage++; // 다음 페이지 준비
         }
 
         // 인피니티 스크롤
         const observer = new IntersectionObserver((entries) => {
             // entries[0].isIntersecting이 true이면 loader가 화면에 보인다는 의미
-            if (entries[0].isIntersecting) {
+            if (entries[0].isIntersecting && !isLoading && hasMorePosts) {
                 loadMorePosts();
             }
         }, {
             threshold: 1.0 // loader가 100% 보일 때 실행
         });
 
-        // loader 요소 관찰 시작
         observer.observe(loader);
-
         // 첫 페이지 로드
         loadMorePosts();
     }
