@@ -643,3 +643,54 @@ body {
     background-color: #D6CFFC; /* 연한 보라 */
     color: #343a40;
 }
+
+
+/* ===================== 정책 페이지 (약관, 개인정보처리방침) ====================== */
+.policy-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.policy-container h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #212529;
+}
+
+.policy-container hr {
+    border: none;
+    border-top: 2px solid #e9ecef;
+    margin: 20px 0 30px 0;
+}
+
+.policy-container h2 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #343a40;
+}
+
+.policy-container p {
+    font-size: 15px;
+    line-height: 1.8;
+    margin-bottom: 15px;
+    color: #495057;
+}
+
+.policy-container ul {
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+.policy-container li {
+    font-size: 15px;
+    line-height: 1.8;
+    margin-bottom: 8px;
+    color: #495057;
+}
