@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         passwordInput.addEventListener('input', updateLoginButtonState);
 
         // 로그인 버튼 클릭
-        loginForm.addEventListener('submit', function(event) {
+        loginForm.addEventListener('submit', async function(event) {
             event.preventDefault();
             
             if (emailInput.value === "") {
@@ -38,29 +38,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     password: passwordInput.value
                 };
 
-                // 서버에 데이터 전송
-                fetch(`${API_BASE_URL}/auth`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json' // JSON 형식으로 전송
-                    },
-                    body: JSON.stringify(loginData) // 데이터를 JSON 문자열로 변환
-                })
-                .then(response => {
-                    // 응답 성공(ok)
-                    if (response.ok) { 
-                        window.location.href = 'posts'; // 게시물 목록 페이지로 이동
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json' // JSON 형식으로 전송
+                        },
+                        body: JSON.stringify(loginData) // 데이터를 JSON 문자열로 변환
+                    });
+
+                    const apiResponse = await response.json();
+
+                    if (!response.ok) {
+                        const errorMessage = apiResponse?.message || "아이디 또는 비밀번호를 확인해주세요.";
+                        passwordHelper.textContent = errorMessage;
+                        return;
                     }
-                    // 응답 실패
-                    else {
-                        passwordHelper.textContent = "아이디 또는 비밀번호를 확인해주세요.";
+
+                    const accessToken = apiResponse?.data?.accessToken;
+
+                    if (accessToken) {
+                        localStorage.setItem('accessToken', accessToken);
+                    } else {
+                        console.warn('응답에 액세스 토큰이 없습니다.', apiResponse);
                     }
-                })
-                // 예외 상황
-                .catch(error => {
+
+                    window.location.href = 'posts'; // 게시물 목록 페이지로 이동
+                } catch (error) {
                     console.error('로그인 중 오류 발생:', error);
                     passwordHelper.textContent = "로그인 중 오류가 발생했습니다.";
-                });
+                }
             }
         });
 });
