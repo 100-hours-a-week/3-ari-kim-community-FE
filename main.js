@@ -9,6 +9,7 @@ app.use('/app.js', express.static(path.join(__dirname, 'app.js')));
 app.use('/index.css', express.static(path.join(__dirname, 'index.css')));
 
 // --- 페이지 라우팅 ---
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postList/PostListPage.html')));
 app.get('/posts', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/postList/PostListPage.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/login/LoginPage.html')));
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/signup/SignupPage.html')));

@@ -2,7 +2,7 @@ const API_BASE_URL = 'http://localhost:8080/api';
 import { validateEmail, validatePassword, validatePasswordCheck, validateNickname } from '../../utils/validation.js';
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname.includes('SignupPage.html')) {
+    if (window.location.pathname.includes('/signup') || window.location.pathname.includes('SignupPage.html')) {
 
         // 1. 필요한 HTML 요소들
         const signupForm = document.getElementById('signup-form');
@@ -68,29 +68,56 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 이벤트 리스너 연결
         // 'input' 이벤트: 실시간으로 버튼 상태 업데이트
-        emailInput.addEventListener('input', updateSignupButtonState);
-        passwordInput.addEventListener('input', updateSignupButtonState);
-        passwordCheckInput.addEventListener('input', updateSignupButtonState);
-        nicknameInput.addEventListener('input', updateSignupButtonState);
+        emailInput.addEventListener('input', () => {
+            validationStatus.email = validateEmail(emailInput, emailHelper);
+            updateSignupButtonState();
+        });
+        passwordInput.addEventListener('input', () => {
+            validationStatus.password = validatePassword(passwordInput, passwordHelper);
+            updateSignupButtonState();
+        });
+        passwordCheckInput.addEventListener('input', () => {
+            validatePasswordCheck(passwordInput, passwordCheckInput, passwordCheckHelper, validationStatus);
+            updateSignupButtonState();
+        });
+        nicknameInput.addEventListener('input', () => {
+            validateNickname(nicknameInput, nicknameHelper, validationStatus);
+            updateSignupButtonState();
+        });
 
         // 'blur' 이벤트: 포커스가 떠날 때 유효성 헬퍼 텍스트 표시
-        emailInput.addEventListener('blur', validateEmail);
-        passwordInput.addEventListener('blur', validatePassword);
-        passwordCheckInput.addEventListener('blur', validatePasswordCheck);
-        passwordInput.addEventListener('blur', validatePasswordCheck);
-        nicknameInput.addEventListener('blur', validateNickname);
+        emailInput.addEventListener('blur', () => {
+            validationStatus.email = validateEmail(emailInput, emailHelper);
+            updateSignupButtonState();
+        });
+        passwordInput.addEventListener('blur', () => {
+            validationStatus.password = validatePassword(passwordInput, passwordHelper);
+            updateSignupButtonState();
+        });
+        passwordCheckInput.addEventListener('blur', () => {
+            validatePasswordCheck(passwordInput, passwordCheckInput, passwordCheckHelper, validationStatus);
+            updateSignupButtonState();
+        });
+        passwordInput.addEventListener('blur', () => {
+            validatePasswordCheck(passwordInput, passwordCheckInput, passwordCheckHelper, validationStatus);
+            updateSignupButtonState();
+        });
+        nicknameInput.addEventListener('blur', () => {
+            validateNickname(nicknameInput, nicknameHelper, validationStatus);
+            updateSignupButtonState();
+        });
 
         // 회원가입
         signupForm.addEventListener('submit', function(event) {
             event.preventDefault(); // 폼 기본 제출(새로고침) 방지
 
             // 제출 시점에 모든 유효성 검사 다시 실행
-            const allClientValid = [
-                validateEmail(),
-                validatePassword(),
-                validatePasswordCheck(),
-                validateNickname()
-            ].every(status => status === true);
+            validationStatus.email = validateEmail(emailInput, emailHelper);
+            validationStatus.password = validatePassword(passwordInput, passwordHelper);
+            validatePasswordCheck(passwordInput, passwordCheckInput, passwordCheckHelper, validationStatus);
+            validateNickname(nicknameInput, nicknameHelper, validationStatus);
+            
+            const allClientValid = Object.values(validationStatus).every(status => status === true);
 
             // 프로필 사진 검사
             if (profilePicFile === null) {

@@ -1,7 +1,7 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname === '/posts') { 
+    if (window.location.pathname === '/posts' || window.location.pathname === '/') { 
 
         const postListContainer = document.getElementById('post-list');
         const loader = document.getElementById('loader');
@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentCursorId = null; 
         let isLoading = false; 
         let hasMorePosts = true;
+        let isFirstLoad = true; // 첫 페이지 로드 여부
 
         // 숫자 포맷팅 함수 (1000 -> 1k)
         function formatNumber(num) {
@@ -21,7 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // 서버에서 게시글 데이터를 가져옴
         async function fetchPosts(cursorId) {
             isLoading = true;
-            loader.style.display = 'block';
+            
+            // 첫 페이지 로드일 때만 로더 표시
+            if (isFirstLoad) {
+                loader.style.display = 'block';
+            }
 
             try {
                 const url = new URL(`${API_BASE_URL}/posts`);
@@ -43,8 +48,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Slice의 'last' 프로퍼티로 다음 페이지 여부 확인
                 hasMorePosts = !slice.last;
 
+                // 첫 페이지 로드 완료 후 처리
+                if (isFirstLoad) {
+                    isFirstLoad = false;
+                    
+                    // 게시물이 0개일 때 빈 상태 메시지 표시
+                    if (posts.length === 0) {
+                        loader.style.display = 'none'; // 로딩 완료 시 로더 숨김
+                        const emptyMessage = document.createElement('div');
+                        emptyMessage.className = 'empty-message';
+                        emptyMessage.style.textAlign = 'center';
+                        emptyMessage.style.padding = '40px 20px';
+                        emptyMessage.style.color = '#868e96';
+                        emptyMessage.style.fontSize = '16px';
+                        emptyMessage.textContent = '아직 나눈 이야기가 없어요!';
+                        postListContainer.appendChild(emptyMessage);
+                    } else {
+                        // 게시물이 있으면 로더 숨김 (추가 로드 시 다시 표시됨)
+                        loader.style.display = 'none';
+                    }
+                }
+                
+                // 더 이상 로드할 게 없으면 로더 숨김
                 if (!hasMorePosts) {
-                    loader.style.display = 'none'; // 더 이상 로드할 게 없으면 로더 숨김
+                    loader.style.display = 'none';
                 }   
                 
                 // 다음 요청에 사용할 '커서 ID' 업데이트
@@ -57,15 +84,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 에러 발생
             } catch (error) {
                 console.error('게시글 로딩 중 오류 발생:', error);
-                loader.innerHTML = '<p>게시글을 불러올 수 없습니다.</p>';
+                loader.style.display = 'none';
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'error-message';
+                errorMessage.style.textAlign = 'center';
+                errorMessage.style.padding = '40px 20px';
+                errorMessage.style.color = '#e03131';
+                errorMessage.style.fontSize = '16px';
+                errorMessage.textContent = '게시글을 불러올 수 없습니다.';
+                postListContainer.appendChild(errorMessage);
                 hasMorePosts = false;
                 return [];
 
             } finally {
                 isLoading = false;
-                if (hasMorePosts) {
-                    loader.style.display = 'none';
-                }
             }
         }
     
@@ -118,7 +150,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 인피니티 스크롤
         const observer = new IntersectionObserver((entries) => {
             // entries[0].isIntersecting이 true이면 loader가 화면에 보인다는 의미
-            if (entries[0].isIntersecting && !isLoading && hasMorePosts) {
+            // 첫 페이지 로드가 완료되고, 더 불러올 게 있을 때만 실행
+            if (entries[0].isIntersecting && !isLoading && hasMorePosts && !isFirstLoad) {
+                loader.style.display = 'block'; // 추가 로드 시 로더 표시
                 loadMorePosts();
             }
         }, {

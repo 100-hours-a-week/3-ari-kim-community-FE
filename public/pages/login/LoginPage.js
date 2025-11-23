@@ -1,4 +1,5 @@
 const API_BASE_URL = 'http://localhost:8080/api';
+import { validateEmail, validatePassword } from '../../utils/validation.js';
 
 document.addEventListener('DOMContentLoaded', function() {
         
@@ -11,12 +12,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 로그인 버튼 활성화
         function updateLoginButtonState() {
-            loginButton.disabled = !(validateEmail() && validatePassword());
+            loginButton.disabled = !(validateEmail(emailInput, emailHelper) && validatePassword(passwordInput, passwordHelper));
         }
 
         // 유효성 검사 및 버튼 상태 업데이트
         emailInput.addEventListener('input', updateLoginButtonState);
         passwordInput.addEventListener('input', updateLoginButtonState);
+        
+        // blur 이벤트: 포커스가 떠날 때 유효성 헬퍼 텍스트 표시
+        emailInput.addEventListener('blur', () => {
+            validateEmail(emailInput, emailHelper);
+            updateLoginButtonState();
+        });
+        passwordInput.addEventListener('blur', () => {
+            validatePassword(passwordInput, passwordHelper);
+            updateLoginButtonState();
+        });
 
         // 로그인 버튼 클릭
         loginForm.addEventListener('submit', async function(event) {
@@ -30,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // 유효성 검사를 통과했을 경우
-            if (validateEmail() && validatePassword()) {
+            if (validateEmail(emailInput, emailHelper) && validatePassword(passwordInput, passwordHelper)) {
 
                 // 서버로 보낼 데이터를 객체로 만듭니다.
                 const loginData = {
