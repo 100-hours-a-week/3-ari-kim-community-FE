@@ -1,5 +1,6 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 import { validateEmail, validatePassword, validatePasswordCheck, validateNickname } from '../../utils/validation.js';
+import { uploadFileToS3 } from '../../utils/s3Upload.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname.includes('/signup') || window.location.pathname.includes('SignupPage.html')) {
@@ -108,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // 회원가입
-        signupForm.addEventListener('submit', function(event) {
+        signupForm.addEventListener('submit', async function(event) {
             event.preventDefault(); // 폼 기본 제출(새로고침) 방지
 
             // 제출 시점에 모든 유효성 검사 다시 실행
@@ -125,41 +126,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 return; // 프로필 없으면 중단
             }
 
-        // 클라이언트 검사 통과 시 서버로 전송
+            // 클라이언트 검사 통과 시 서버로 전송
             if (allClientValid) {
-                // FormData 객체 생성 (파일 + 텍스트)
-                const formData = new FormData();
-                formData.append('profilePic', profilePicFile);
-                formData.append('email', emailInput.value);
-                formData.append('password', passwordInput.value);
-                formData.append('nickname', nicknameInput.value);
+                try {
+                    // 1. S3에 파일 업로드
+                    signupButton.disabled = true;
+                    signupButton.textContent = '업로드 중...';
+                    
+                    const profileUrl = await uploadFileToS3(profilePicFile, 'users');
 
-                // fetch로 서버에 전송
-                fetch('/api/signup', { // (가상) 회원가입 API 엔드포인트
-                    method: 'POST',
-                    body: formData // FormData는 'Content-Type'을 자동으로 'multipart/form-data'로 설정
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                    // 회원가입 성공
+                    // 2. Spring Boot API에 회원가입 요청 (S3 URL 포함)
+                    const response = await fetch(`${API_BASE_URL}/users/signup`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: emailInput.value,
+                            password: passwordInput.value,
+                            nickname: nicknameInput.value,
+                            profileUrl: profileUrl
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok && data.success) {
+                        // 회원가입 성공
                         alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
-                        window.location.href = 'LoginPage.html';
+                        window.location.href = '/login';
                     } else {
-                    // 서버측 유효성 검사 실패 (예: 중복 이메일)
-                        if (data.field === 'email') {
-                            emailHelper.textContent = data.message;
-                        } else if (data.field === 'nickname') {
-                           nicknameHelper.textContent = data.message;
+                        // 서버측 유효성 검사 실패 (예: 중복 이메일)
+                        const errorMessage = data?.message || '회원가입에 실패했습니다.';
+                        if (errorMessage.includes('이메일')) {
+                            emailHelper.textContent = errorMessage;
+                        } else if (errorMessage.includes('닉네임')) {
+                            nicknameHelper.textContent = errorMessage;
                         } else {
-                            alert(`회원가입 실패: ${data.message}`);
+                            alert(`회원가입 실패: ${errorMessage}`);
                         }
                     }
-                })
-                .catch(error => {
+                } catch (error) {
                     console.error('회원가입 중 오류 발생:', error);
+                    profilePicHelper.textContent = '파일 업로드 중 오류가 발생했습니다.';
                     alert('회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-                });
+                } finally {
+                    signupButton.disabled = false;
+                    signupButton.textContent = '회원가입';
+                }
             }
         });
     }

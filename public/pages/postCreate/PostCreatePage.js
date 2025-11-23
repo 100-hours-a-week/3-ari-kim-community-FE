@@ -1,4 +1,5 @@
 const API_BASE_URL = 'http://localhost:8080/api';
+import { uploadFileToS3 } from '../../utils/s3Upload.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -54,33 +55,49 @@ document.addEventListener('DOMContentLoaded', () => {
             titleHelper.textContent = "";
         }
 
-        // FormData 객체 생성 (파일 + 텍스트)
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('content', content);
-        if (imageFile) {
-            formData.append('imageUrl', imageFile);
-        }
-
-        // (서버 API 호출
         try {
+            submitButton.disabled = true;
+            submitButton.textContent = '업로드 중...';
+
+            // 1. 이미지가 있으면 S3에 업로드
+            let imageUrl = null;
+            if (imageFile) {
+                imageUrl = await uploadFileToS3(imageFile, 'posts');
+            }
+
+            // 2. Spring Boot API에 게시물 등록 요청 (S3 URL 포함)
+            const accessToken = localStorage.getItem('accessToken');
+            const userId = parseInt(localStorage.getItem('userId'), 10);
+
             const response = await fetch(`${API_BASE_URL}/posts`, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': accessToken ? `Bearer ${accessToken}` : ''
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    title: title,
+                    content: content,
+                    imageUrl: imageUrl
+                })
             });
 
-            if (response.ok) {
-                const newPost = await response.json();
+            const data = await response.json();
+            if (response.ok && data.success) {
                 alert('게시글이 성공적으로 등록되었습니다.');
-                window.location.href = `/posts/${newPost.id}`;
+                window.location.href = `/posts/${data.data.postId}`;
             } else {
-                const error = await response.json();
-                alert(`등록 실패: ${error.message}`);
+                const errorMessage = data?.message || '게시글 등록에 실패했습니다.';
+                alert(`등록 실패: ${errorMessage}`);
             }
 
         } catch (error) {
             console.error('게시글 등록 중 오류 발생:', error);
             alert('게시글 등록 중 오류가 발생했습니다.');
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = '게시글 작성';
         }
     });
 });

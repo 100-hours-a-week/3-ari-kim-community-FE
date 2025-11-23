@@ -1,5 +1,6 @@
-// 1. (경로 확인) utils/validate.js에서 닉네임 유효성 검사 함수 import
+const API_BASE_URL = 'http://localhost:8080/api';
 import { validateNickname } from '../../utils/validation.js';
+import { uploadFileToS3, deleteFileFromS3 } from '../../utils/s3Upload.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
     let profilePicFile = null; // 새로 선택한 프로필 파일
+    let existingProfileUrl = null; // 기존 프로필 URL
     let isNicknameValid = false; // 닉네임 유효성 상태
 
     // --- 2. (가상) 기존 유저 데이터 불러오기 ---
@@ -45,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             emailDisplay.textContent = data.email;
             nicknameInput.value = data.nickname;
             
+            existingProfileUrl = data.profilePicUrl;
             if (data.profilePicUrl) {
                 profilePicPreview.style.backgroundImage = `url(${data.profilePicUrl})`;
                 profilePicPreview.classList.add('has-image');
@@ -99,35 +102,59 @@ document.addEventListener('DOMContentLoaded', () => {
         handleNicknameInput();
         if (!isNicknameValid) return;
 
-        // FormData 생성
-        const formData = new FormData();
-        formData.append('nickname', nicknameInput.value);
-        if (profilePicFile) { // 새 이미지가 선택된 경우에만
-            formData.append('profilePic', profilePicFile);
-        }
-
-        // 서버 API 호출
         try {
-            const response = await fetch('/api/user/profile', {
-                method: 'PUT', // 또는 'PATCH'
-                body: formData
-                // headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw errorData; // (예: { field: 'nickname', message: '중복된 닉네임 입니다.' })
+            submitButton.disabled = true;
+            submitButton.textContent = '업로드 중...';
+
+            // 1. 새 프로필 사진이 있으면 S3에 업로드
+            let profileUrl = existingProfileUrl; // 기존 프로필 URL 유지
+            if (profilePicFile) {
+                // 기존 프로필이 있으면 삭제
+                if (existingProfileUrl) {
+                    try {
+                        await deleteFileFromS3(existingProfileUrl);
+                    } catch (error) {
+                        console.warn('기존 프로필 삭제 실패:', error);
+                    }
+                }
+                // 새 프로필 업로드
+                profileUrl = await uploadFileToS3(profilePicFile, 'users');
             }
 
-            // 수정 완료
-            alert('수정 완료'); // (요청 사항) alert 사용
+            // 2. Spring Boot API에 회원정보 수정 요청 (S3 URL 포함)
+            const accessToken = localStorage.getItem('accessToken');
+            const userId = parseInt(localStorage.getItem('userId'), 10);
+
+            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': accessToken ? `Bearer ${accessToken}` : ''
+                },
+                body: JSON.stringify({
+                    nickname: nicknameInput.value,
+                    profileUrl: profileUrl
+                })
+            });
+
+            const data = await response.json();
+            if (response.ok && data.success) {
+                alert('수정 완료');
+            } else {
+                const errorMessage = data?.message || '수정에 실패했습니다.';
+                if (errorMessage.includes('닉네임')) {
+                    nicknameHelper.textContent = errorMessage;
+                } else {
+                    alert(`수정 실패: ${errorMessage}`);
+                }
+            }
 
         } catch (error) {
-            // 중복 닉네임 등 서버 에러 처리
-            if (error.field === 'nickname') {
-                nicknameHelper.textContent = error.message;
-            } else {
-                alert(`수정 실패: ${error.message}`);
-            }
+            console.error('회원정보 수정 중 오류:', error);
+            alert(`수정 실패: ${error.message || '오류가 발생했습니다.'}`);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = '수정 완료';
         }
     });
 
