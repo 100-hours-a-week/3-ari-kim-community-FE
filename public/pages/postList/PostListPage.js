@@ -1,10 +1,12 @@
 const API_BASE_URL = 'http://localhost:8080/api';
+import { showToast, showToastAfterRedirect } from '../../utils/toast.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/posts' || window.location.pathname === '/') { 
 
         const postListContainer = document.getElementById('post-list');
         const loader = document.getElementById('loader');
+        const createPostButton = document.querySelector('.create-post-button');
 
         let currentCursorId = null; 
         let isLoading = false; 
@@ -36,17 +38,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 const response = await fetch(url);
-                const apiResponse = await response.json();
+                
+                let apiResponse = null;
+                try {
+                    const responseText = await response.text();
+                    if (responseText) {
+                        apiResponse = JSON.parse(responseText);
+                    }
+                } catch (parseError) {
+                    throw new Error('서버 응답을 읽을 수 없습니다.');
+                }
 
-                if (!response.ok || !apiResponse.success) {
-                    throw new Error(apiResponse.message || '서버에서 게시글을 불러오는데 실패했습니다.');
+                // 성공 응답 체크: response.ok와 data.status === 200 확인
+                if (!response.ok || !apiResponse || (apiResponse.status !== 200 && response.status !== 200)) {
+                    throw new Error(apiResponse?.message || '서버에서 게시글을 불러오는데 실패했습니다.');
                 }
 
                 const slice = apiResponse.data; // slice 객체 (from Spring Data)
-                const posts = slice.content;    // 실제 게시글 배열
+                const posts = slice && slice.content ? slice.content : [];    // 실제 게시글 배열 (null 체크)
 
                 // Slice의 'last' 프로퍼티로 다음 페이지 여부 확인
-                hasMorePosts = !slice.last;
+                hasMorePosts = slice ? !slice.last : false;
 
                 // 첫 페이지 로드 완료 후 처리
                 if (isFirstLoad) {
@@ -108,6 +120,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const postLink = document.createElement('a');
             postLink.href = `/posts/${post.postId}`;
             postLink.className = 'post-item';
+            
+            // 로그인하지 않은 사용자가 게시물을 클릭하면 토스트 표시
+            postLink.addEventListener('click', function(e) {
+                const accessToken = localStorage.getItem('accessToken');
+                if (!accessToken) {
+                    e.preventDefault();
+                    showToastAfterRedirect('로그인이 필요한 서비스입니다.');
+                    window.location.href = '/login';
+                }
+            });
 
             // 제목 26자 제한
             const truncatedTitle = post.title.length > 26 ? post.title.substring(0, 26) + '...' : post.title;
@@ -127,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span>댓글 ${formatNumber(post.commentCount)}</span>
                         <span>조회수 ${formatNumber(post.viewCount)}</span>
                     </div>
-                    <span class="post-date">${new Date(post.date).toLocaleString()}</span>
+                    <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
                 </div>
                 <div class="post-footer">
                     <div class="post-author">
@@ -135,6 +157,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="author-name">${post.nickname}</span>
                     </div>
                 </div>`;
+            
+            // 작성자 프로필 이미지 표시
+            const authorAvatar = postLink.querySelector('.author-avatar');
+            if (authorAvatar && post.profileUrl && post.profileUrl.trim() !== '') {
+                const testImg = new Image();
+                testImg.onload = function() {
+                    authorAvatar.style.backgroundImage = `url(${post.profileUrl})`;
+                    authorAvatar.style.backgroundSize = 'cover';
+                    authorAvatar.style.backgroundPosition = 'center';
+                    authorAvatar.style.backgroundColor = 'transparent';
+                };
+                testImg.onerror = function() {
+                    authorAvatar.style.backgroundImage = 'none';
+                    authorAvatar.style.backgroundColor = '#e9ecef';
+                };
+                testImg.src = post.profileUrl;
+            } else if (authorAvatar) {
+                authorAvatar.style.backgroundImage = 'none';
+                authorAvatar.style.backgroundColor = '#e9ecef';
+            }
+            
             return postLink;
         }
 
@@ -162,5 +205,24 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(loader);
         // 첫 페이지 로드
         loadMorePosts();
+
+        // 게시물 작성 버튼 클릭 이벤트
+        if (createPostButton) {
+            createPostButton.addEventListener('click', function(e) {
+                const accessToken = localStorage.getItem('accessToken');
+                
+                // 로그인하지 않은 경우
+                if (!accessToken) {
+                    e.preventDefault(); // 기본 링크 동작 방지
+                    
+                    // 페이지 이동 후에도 토스트를 표시하기 위해 localStorage에 저장
+                    showToastAfterRedirect('로그인이 필요한 서비스입니다.');
+                    
+                    // 로그인 페이지로 즉시 이동
+                    window.location.href = '/login';
+                }
+                // 로그인한 경우는 기본 링크 동작 허용
+            });
+        }
     }
 });

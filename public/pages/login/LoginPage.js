@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080';
 import { validateEmail, validatePassword } from '../../utils/validation.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 try {
-                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json' // JSON 형식으로 전송
@@ -67,11 +67,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     const accessToken = apiResponse?.data?.accessToken;
+                    const userId = apiResponse?.data?.userId;
+                    const email = apiResponse?.data?.email;
+                    const nickname = apiResponse?.data?.nickname;
+                    const profileUrl = apiResponse?.data?.profileUrl;
 
                     if (accessToken) {
                         localStorage.setItem('accessToken', accessToken);
                     } else {
                         console.warn('응답에 액세스 토큰이 없습니다.', apiResponse);
+                    }
+                    
+                    // 사용자 정보 저장
+                    if (userId) {
+                        localStorage.setItem('userId', userId.toString());
+                    }
+                    if (email) {
+                        localStorage.setItem('userEmail', email);
+                    }
+                    if (nickname) {
+                        localStorage.setItem('userNickname', nickname);
+                    }
+                    if (profileUrl) {
+                        localStorage.setItem('userProfileUrl', profileUrl);
+                    } else {
+                        // 프로필 URL이 없으면 빈 문자열로 저장
+                        localStorage.setItem('userProfileUrl', '');
                     }
 
                     window.location.href = 'posts'; // 게시물 목록 페이지로 이동
