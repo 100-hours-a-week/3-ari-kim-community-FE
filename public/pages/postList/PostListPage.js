@@ -128,6 +128,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     e.preventDefault();
                     showToastAfterRedirect('로그인이 필요한 서비스입니다.');
                     window.location.href = '/login';
+                } else {
+                    // 로그인한 경우, 현재 스크롤 위치를 저장
+                    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+                    sessionStorage.setItem('postListScrollPosition', scrollPosition.toString());
                 }
             });
 
@@ -188,6 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const postElement = createPostElement(post);
                 postListContainer.appendChild(postElement);
             });
+            return posts; // Promise 반환을 위해 추가
         }
 
         // 인피니티 스크롤
@@ -203,8 +208,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         observer.observe(loader);
+        
+        // 저장된 스크롤 위치 복원
+        function restoreScrollPosition() {
+            const savedScrollPosition = sessionStorage.getItem('postListScrollPosition');
+            if (savedScrollPosition !== null) {
+                const scrollY = parseInt(savedScrollPosition, 10);
+                // DOM이 완전히 렌더링되고 이미지 로드까지 고려하여 스크롤 복원
+                const restore = () => {
+                    window.scrollTo({
+                        top: scrollY,
+                        behavior: 'auto' // 즉시 이동 (smooth가 아닌)
+                    });
+                    sessionStorage.removeItem('postListScrollPosition'); // 복원 후 제거
+                };
+                
+                // 이미지 로드를 고려하여 약간의 지연 후 복원
+                // requestAnimationFrame을 사용하여 브라우저 렌더링 완료 후 실행
+                requestAnimationFrame(() => {
+                    setTimeout(restore, 200);
+                });
+            }
+        }
+        
         // 첫 페이지 로드
-        loadMorePosts();
+        loadMorePosts().then(() => {
+            // 게시물 로드 완료 후 스크롤 위치 복원
+            restoreScrollPosition();
+        });
 
         // 게시물 작성 버튼 클릭 이벤트
         if (createPostButton) {
