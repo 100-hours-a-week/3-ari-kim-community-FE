@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원정보 수정</title>
+    <link rel="stylesheet" href="../../../index.css">
+</head>
+<body>
+    
+    <div id="header-placeholder"></div>
+
+    <main class="container">
+        <div class="form-container">
+            <h2 class="form-title">회원정보 수정</h2>
+
+            <form id="user-update-form">
+                <div class="form-group profile-update-container">
+                    <label for="profile-pic-input">프로필 사진</label>
+                    <input type="file" id="profile-pic-input" accept="image/*" class="hidden-input">
+                    <div id="profile-pic-preview" class="profile-pic-preview">
+                        <span>+</span> <div class="change-overlay">
+                            <span>변경</span>
+                        </div>
+                    </div>
+                    <p class="helper-text" id="profile-pic-helper"></p>
+                </div>
+
+                <div class="form-group">
+                    <label>이메일</label>
+                    <p id="email-display" class="static-text">startupcode@gmail.com</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="nickname">닉네임</label>
+                    <input type="text" id="nickname" placeholder="닉네임을 입력하세요">
+                    <p id="nickname-helper" class="helper-text"></p>
+                </div>
+
+                <button type="submit" id="submit-button" class="form-button" disabled>수정하기</button>
+            </form>
+
+            <a href="#" id="delete-account-link" class="form-link delete-link">회원 탈퇴</a>
+        </div>
+    </main>
+
+    <div id="delete-account-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <h3>회원탈퇴 하시겠습니까?</h3>
+            <p>작성된 게시글과 댓글은 삭제됩니다.</p>
+            <div class="modal-actions">
+                <button id="cancel-delete-btn" class="modal-button-cancel">취소</button>
+                <button id="confirm-delete-btn" class="modal-button-confirm">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/client.js" type="module"></script>
+    <script src="/pages/userUpdate/UserUpdatePage.js" type="module"></script>
+</body>
+</html>

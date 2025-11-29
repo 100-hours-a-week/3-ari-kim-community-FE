@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시물 상세</title>
+    <link rel="stylesheet" href="../../../index.css">
+</head>
+<body>
+    
+    <div id="header-placeholder"></div>
+
+    <main class="container">
+        <article class="post-detail-container">
+            <h2 id="post-title" class="post-detail-title"></h2>
+            
+            <div class="post-detail-header">
+                <div class="post-author-info">
+                    <div class="author-avatar"></div>
+                    <span id="post-author" class="author-name"></span>
+                    <span id="post-date" class="post-date"></span>
+                </div>
+                <div id="post-actions" class="post-actions" style="display: none;">
+                    <button id="edit-post-btn" class="text-button">수정</button>
+                    <button id="delete-post-btn" class="text-button">삭제</button>
+                </div>
+            </div>
+
+            <div id="post-image" class="post-image-placeholder"></div>
+            
+            <div id="post-content" class="post-detail-content"></div>
+        </article>
+
+        <section class="post-stats-container">
+            <div class="stat-item">
+                <button id="like-button" class="like-button" data-liked="false">좋아요</button>
+                <span id="like-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span>조회수</span>
+                <span id="view-count">0</span>
+            </div>
+            <div class="stat-item">
+                <span>댓글</span>
+                <span id="comment-count">0</span>
+            </div>
+        </section>
+
+        <section class="comment-form-container">
+            <form id="comment-form">
+                <textarea id="comment-textarea" placeholder="댓글을 남겨주세요"></textarea>
+                <button id="comment-submit-btn" type="submit" class="form-button" disabled>댓글 등록</button>
+            </form>
+        </section>
+
+        <section id="comment-list" class="comment-list-container"></section>
+    </main>
+
+    <div id="delete-post-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <h3>게시글을 삭제하시겠습니까?</h3>
+            <p>삭제한 내용은 복구할 수 없습니다.</p>
+            <div class="modal-actions">
+                <button id="cancel-post-delete" class="modal-button-cancel">취소</button>
+                <button id="confirm-post-delete" class="modal-button-confirm">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-comment-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <h3>댓글을 삭제하시겠습니까?</h3>
+            <p>삭제한 내용은 복구할 수 없습니다.</p>
+            <div class="modal-actions">
+                <button id="cancel-comment-delete" class="modal-button-cancel">취소</button>
+                <button id="confirm-comment-delete" class="modal-button-confirm">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/client.js" type="module"></script>
+    <script src="/pages/postDetail/PostDetailPage.js" type="module"></script>
+</body>
+</html>

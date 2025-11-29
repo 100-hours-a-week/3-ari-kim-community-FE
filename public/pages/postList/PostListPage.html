@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시물 목록</title>
+    <link rel="stylesheet" href="../../../index.css">
+</head>
+<body>
+
+    <div id="header-placeholder"></div>
+
+    <main class="container">
+        <!-- 상단 문구 -->
+        <section class="intro-section">
+            <div class="intro-text">
+                <h2>Rare + Lovely = Rarely</h2>
+                <h2>당신의 특별한 애완동물에 대해 이야기 나눠보세요!</h2>
+            </div>
+            <a href="/posts/create" class="create-post-button">게시글 작성</a>
+        </section>
+
+        <!-- 게시글 목록 -->
+        <section id="post-list"></section>
+
+        <div id="loader" class="loader">
+            <p>loading...</p>
+        </div>
+    </main>
+
+    <script src="/client.js" type="module"></script>
+    <script src="/pages/postList/PostListPage.js" type="module"></script>
+</html>
