@@ -42,7 +42,7 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
       - name: Build and Push Docker Image
         run: |
-          docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/rarelyfe:latest .
+          docker build --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/rarely-fe:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/rarely-fe:latest
 
   deploy:
