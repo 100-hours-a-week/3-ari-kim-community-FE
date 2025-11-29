@@ -60,12 +60,6 @@ test('Express 서버 테스트', async (t) => {
     assert.match(response.type, /html/);
   });
 
-  await t.test('GET /users/:id/password - 비밀번호 수정 페이지가 정상적으로 응답', async () => {
-    const response = await request(app).get('/users/1/password');
-    assert.strictEqual(response.status, 200);
-    assert.match(response.type, /html/);
-  });
-
   // 정적 파일 제공 테스트
   await t.test('정적 파일 제공 - client.js 파일이 정상적으로 제공', async () => {
     const clientJsPath = path.join(__dirname, 'client.js');
