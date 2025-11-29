@@ -20,6 +20,12 @@ app.get('/users/:id/edit', (req, res) => res.sendFile(path.join(__dirname, 'publ
 app.get('/users/:id/password', (req, res) => res.sendFile(path.join(__dirname, 'public/pages/passwordUpdate/PasswordUpdatePage.html')));
 
 // --- 서버 실행 ---
-app.listen(port, () => {
-    console.log(`Express 서버가 http://localhost:${port} 에서 실행 중입니다.`);
-});
+// 테스트 환경이 아닐 때만 서버 실행
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`Express 서버가 http://localhost:${port} 에서 실행 중입니다.`);
+    });
+}
+
+// 테스트를 위해 app export
+module.exports = app;
