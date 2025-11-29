@@ -98,24 +98,8 @@ jobs:
 
       - name: Deploy to EC2 via Docker Compose
         run: |
-          # EC2 서버에서 디렉토리 생성 및 docker-compose.yml 파일 생성
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << EOF
-            mkdir -p /home/${{ secrets.SERVER_USER }}/rarely-fe
-            cat > /home/${{ secrets.SERVER_USER }}/rarely-fe/docker-compose.yml << 'COMPOSE_EOF'
-          version: '3.8'
-          
-          services:
-            app:
-              image: ${{ secrets.DOCKER_USERNAME }}/rarely-fe:latest
-              container_name: rarely-fe
-              ports:
-                - "3000:3000"
-              restart: unless-stopped
-              environment:
-                - NODE_ENV=production
-          COMPOSE_EOF
-            cd /home/${{ secrets.SERVER_USER }}/frontend
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            cd /home/${{ secrets.SERVER_USER }}/backend
             docker compose pull
             docker compose up -d
           EOF
-          
