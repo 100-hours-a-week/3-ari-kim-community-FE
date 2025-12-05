@@ -1,5 +1,6 @@
 const API_BASE_URL = 'http://localhost:8080';
 import { validateEmail, validatePassword } from '../../utils/validation.js';
+import { startAutoFootPrint } from '../../utils/footPrint.js';
 
 document.addEventListener('DOMContentLoaded', function() {
         
@@ -101,5 +102,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     passwordHelper.textContent = "로그인 중 오류가 발생했습니다.";
                 }
             }
+        });
+
+        // 로그인 페이지에서 자동으로 foot 이미지 반복 생성
+        const stopAutoFootPrint = startAutoFootPrint({
+            interval: 800, // 0.8초마다 생성 (더 많이 생성)
+            footOptions: {
+                containerWidth: 400, // 로그인 폼 컨테이너 너비
+                containerPadding: 40,
+                headerHeight: 70,
+                imageSize: 60
+            }
+        });
+
+        // 페이지를 떠날 때 자동 생성 중지
+        window.addEventListener('beforeunload', () => {
+            stopAutoFootPrint();
         });
 });

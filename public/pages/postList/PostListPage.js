@@ -1,5 +1,6 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 import { showToast, showToastAfterRedirect } from '../../utils/toast.js';
+import { createFootImage } from '../../utils/footPrint.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname === '/posts' || window.location.pathname === '/') { 
@@ -255,5 +256,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 로그인한 경우는 기본 링크 동작 허용
             });
         }
+
+        // 스크롤 시 foot 이미지 생성 기능
+        let lastFootScrollY = 0;
+        let scrollThreshold = 200; // 200px 스크롤할 때마다 이미지 생성
+
+        // 스크롤 이벤트 리스너
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+            const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollDelta = currentScrollY - lastFootScrollY;
+            
+            // 아래로 스크롤할 때만 작동
+            if (scrollDelta > 0 && scrollDelta >= scrollThreshold) {
+                createFootImage({
+                    containerWidth: 800,
+                    containerPadding: 40,
+                    headerHeight: 70,
+                    imageSize: 60
+                });
+                lastFootScrollY = currentScrollY;
+            } else if (scrollDelta < 0) {
+                // 위로 스크롤할 때는 lastFootScrollY만 업데이트
+                lastFootScrollY = currentScrollY;
+            }
+            
+            // 스크롤 이벤트 최적화를 위한 디바운싱
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                // 스크롤이 멈췄을 때 추가 처리 (필요시)
+            }, 150);
+        });
     }
 });
