@@ -1,7 +1,7 @@
 /*=============== 공통 요소 ================*/
 body {
     font-family: sans-serif;
-    background-color: #f0f2f5;
+    background-color: #f5f4f0;
     margin: 0;
     color: #212529;
 }
@@ -72,13 +72,13 @@ main.container {
 
 /* 버튼 비활성화 */
 .form-button:disabled {
-    background-color: #ACA0EB;
+    background-color: #ffca7a;
     cursor: not-allowed;
 }
 
 /* 버튼 활성화 */
 .form-button:not(:disabled) {
-    background-color: #7F6AEE;
+    background-color: #fdac32;
 }
 
 .form-link {
@@ -139,7 +139,11 @@ main.container {
     flex-direction: column;
     align-items: center;
     margin-top: 30px;
-    margin-bottom: 20px; 
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.intro-text {
     text-align: center;
 }
 
@@ -152,7 +156,7 @@ main.container {
 
 /* 게시글 작성 버튼 */
 .create-post-button {
-    background-color: #ACA0EB;
+    background-color: #fdac32;
     color: white;
     padding: 12px 20px;
     border-radius: 8px;
@@ -160,11 +164,14 @@ main.container {
     font-weight: bold;
     font-size: 14px;
     transition: background-color 0.2s;
-    flex-shrink: 0;margin-top: 15px;
+    flex-shrink: 0;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    align-self: flex-end; /* 버튼만 오른쪽 정렬 */
 }
 
 .create-post-button:hover {
-    background-color: #7F6AEE;
+    background-color: #fdac32;
 }
 
 /* 게시글 아이템 */
@@ -365,10 +372,10 @@ main.container {
 
 /* 좋아요 버튼 색상 */
 .like-button.unliked {
-    color: #212529; /* 비활성 (검정색) */
+    color: #ffca7a; /* 비활성 */
 }
 .like-button.liked {
-    color: #ACA0EB; /* 활성 (보라색) */
+    color: #fdac32; /* 활성 */
 }
 
 /* 댓글 폼 */
@@ -481,8 +488,8 @@ main.container {
 }
 
 .modal-button-confirm {
-    background-color: #D6CFFC;
-    color: #343a40;
+    background-color: #fdac32;
+    color: white;
 }
 
 
@@ -655,8 +662,8 @@ main.container {
 }
 
 .modal-button-confirm {
-    background-color: #D6CFFC; /* 연한 보라 */
-    color: #343a40;
+    background-color: #fdac32; /* 활성 색상 */
+    color: white;
 }
 
 

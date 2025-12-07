@@ -2,6 +2,9 @@
 // Function URL은 CORS를 Lambda 함수 내에서 직접 처리할 수 있습니다
 const LAMBDA_FUNCTION_URL = 'https://6a5jvlpiwczltv4oye3i6twcfm0axjzf.lambda-url.ap-northeast-2.on.aws';
 
+// CloudFront 도메인 (경로 패턴: /uploads/*)
+const CLOUDFRONT_DOMAIN = 'https://rarelypet.store';
+
 /**
  * Lambda를 통해 Pre-signed URL을 받아서 S3에 파일을 업로드하고 S3 URL을 반환합니다.
  * @param {File} file - 업로드할 파일
@@ -11,7 +14,8 @@ const LAMBDA_FUNCTION_URL = 'https://6a5jvlpiwczltv4oye3i6twcfm0axjzf.lambda-url
 export async function uploadFileToS3(file, folder) {
     try {
         // 1. Lambda에 Pre-signed URL 요청
-        const fileName = `${folder}/${Date.now()}_${file.name}`;
+        // CloudFront 경로 패턴 /uploads/*에 맞추기 위해 uploads/를 포함
+        const fileName = `uploads/${folder}/${Date.now()}_${file.name}`;
         const fileType = file.type || 'image/jpeg';
 
         console.log('Lambda에 Pre-signed URL 요청:', { fileName, fileType, url: LAMBDA_FUNCTION_URL });
@@ -108,7 +112,8 @@ export async function uploadFileToS3(file, folder) {
             throw new Error(`S3 업로드 실패 (${s3Response.status}): ${errorText}`);
         }
 
-        // 3. S3 URL 반환 (Lambda에서 받은 fileName을 기반으로)
+        // 3. CloudFront URL 반환 (Lambda에서 받은 fileName을 기반으로)
+        // fileName에 이미 uploads/가 포함되어 있으므로 그대로 사용
         // 한글 파일명을 포함한 URL을 올바르게 인코딩
         const pathParts = fileName.split('/');
         const encodedPath = pathParts.map(part => {
@@ -117,9 +122,9 @@ export async function uploadFileToS3(file, folder) {
             }
             return part;
         }).join('/');
-        const s3Url = `https://rarely-s3-bucket.s3.ap-northeast-2.amazonaws.com/${encodedPath}`;
-        console.log('S3 업로드 성공:', s3Url);
-        return s3Url;
+        const cloudfrontUrl = `${CLOUDFRONT_DOMAIN}/${encodedPath}`;
+        console.log('S3 업로드 성공 (CloudFront URL):', cloudfrontUrl);
+        return cloudfrontUrl;
 
     } catch (error) {
         console.error('S3 업로드 중 오류:', error);
@@ -140,16 +145,29 @@ export async function deleteFileFromS3(s3Url) {
     try {
         console.log('[S3 삭제] 원본 URL:', s3Url);
         
-        // S3 URL에서 key 추출
-        // https://rarely-s3-bucket.s3.ap-northeast-2.amazonaws.com/folder/file.jpg
-        // -> folder/file.jpg
-        const urlParts = s3Url.split('.amazonaws.com/');
-        if (urlParts.length < 2) {
-            throw new Error('잘못된 S3 URL 형식');
+        // CloudFront URL 또는 S3 URL에서 key 추출
+        // CloudFront: https://rarelypet.store/uploads/users/file.jpg -> users/file.jpg
+        // S3: https://rarely-s3-bucket.s3.ap-northeast-2.amazonaws.com/users/file.jpg -> users/file.jpg
+        let key;
+        if (s3Url.includes(CLOUDFRONT_DOMAIN)) {
+            // CloudFront URL 처리
+            const urlParts = s3Url.split('/uploads/');
+            if (urlParts.length < 2) {
+                throw new Error('잘못된 CloudFront URL 형식 (uploads 경로 없음)');
+            }
+            key = urlParts[1];
+        } else if (s3Url.includes('.amazonaws.com/')) {
+            // S3 URL 처리 (하위 호환성)
+            const urlParts = s3Url.split('.amazonaws.com/');
+            if (urlParts.length < 2) {
+                throw new Error('잘못된 S3 URL 형식');
+            }
+            key = urlParts[1];
+        } else {
+            throw new Error('지원하지 않는 URL 형식');
         }
         
         // URL 디코딩된 key 추출 (한글 파일명 처리)
-        let key = urlParts[1];
         try {
             // URL이 이미 인코딩되어 있을 수 있으므로 디코딩 후 재인코딩
             key = decodeURIComponent(key);
