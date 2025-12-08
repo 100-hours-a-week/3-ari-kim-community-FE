@@ -372,7 +372,7 @@ main.container {
 
 /* 좋아요 버튼 색상 */
 .like-button.unliked {
-    color: #ffca7a; /* 비활성 */
+    color: #495057; /* 비활성 */
 }
 .like-button.liked {
     color: #fdac32; /* 활성 */
