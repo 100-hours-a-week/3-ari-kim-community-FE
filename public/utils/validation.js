@@ -33,15 +33,12 @@ export function validatePassword(passwordInput, passwordHelper) {
         }
     }
 
-    // passwordHelper가 있는 경우 (회원가입 페이지 등에서 사용)
+    // passwordHelper가 있는 경우에도 helper text는 설정하지 않고 유효성만 반환
     if (password === "") {
-        passwordHelper.textContent = "";
         return false;
     } else if (!passwordRegex.test(password)) {
-        passwordHelper.textContent = "비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
         return false;
     } else {
-        passwordHelper.textContent = "";
         return true;
     }
 }

@@ -74,7 +74,16 @@ document.addEventListener('DOMContentLoaded', function() {
             updateSignupButtonState();
         });
         passwordInput.addEventListener('input', () => {
-            validationStatus.password = validatePassword(passwordInput, passwordHelper);
+            const isValid = validatePassword(passwordInput, passwordHelper);
+            validationStatus.password = isValid;
+            // 회원가입 페이지에서는 helper text 항상 표시
+            if (!isValid && passwordInput.value !== "") {
+                passwordHelper.textContent = "비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.";
+            } else if (passwordInput.value === "") {
+                passwordHelper.textContent = "";
+            } else {
+                passwordHelper.textContent = "";
+            }
             updateSignupButtonState();
         });
         passwordCheckInput.addEventListener('input', () => {
