@@ -14,8 +14,10 @@ const CLOUDFRONT_DOMAIN = 'https://rarelypet.store';
 export async function uploadFileToS3(file, folder) {
     try {
         // 1. Lambda에 Pre-signed URL 요청
-        // CloudFront 경로 패턴 /uploads/*에 맞추기 위해 uploads/를 포함
-        const fileName = `uploads/${folder}/${Date.now()}_${file.name}`;
+        // 파일명을 영어 난수로 생성 (한글 제거)
+        const extension = file.name.split('.').pop();
+        const randomString = Math.random().toString(36).substring(2, 12);
+        const fileName = `uploads/${folder}/${Date.now()}_${randomString}.${extension}`;
         const fileType = file.type || 'image/jpeg';
 
         console.log('Lambda에 Pre-signed URL 요청:', { fileName, fileType, url: LAMBDA_FUNCTION_URL });
