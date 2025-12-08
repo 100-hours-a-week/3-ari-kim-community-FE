@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080';
+import { API_BASE_URL } from '../../utils/config.js';
 import { validateEmail, validatePassword } from '../../utils/validation.js';
 import { startAutoFootPrint } from '../../utils/footPrint.js';
 
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 try {
-                    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json' // JSON 형식으로 전송

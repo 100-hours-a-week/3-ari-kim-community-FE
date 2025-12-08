@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+import { API_BASE_URL } from '../../utils/config.js';
 import { validateNickname } from '../../utils/validation.js';
 import { uploadFileToS3, deleteFileFromS3 } from '../../utils/s3Upload.js';
 import { showToast, showToastAfterRedirect } from '../../utils/toast.js';

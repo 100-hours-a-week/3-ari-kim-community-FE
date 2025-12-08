@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+import { API_BASE_URL } from '../../utils/config.js';
 import { uploadFileToS3, deleteFileFromS3 } from '../../utils/s3Upload.js';
 import { showToastAfterRedirect } from '../../utils/toast.js';
 
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.imageUrl) {
                 // S3 URL에서 파일명 추출
                 try {
-                    const url = new URL(data.imageUrl);
+                    const url = new URL(data.imageUrl, window.location.origin);
                     const pathParts = url.pathname.split('/');
                     const fileName = pathParts[pathParts.length - 1];
                     // URL 디코딩하여 한글 파일명 복원

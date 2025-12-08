@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api';
+import { API_BASE_URL } from '../../utils/config.js';
 import { showToast, showToastAfterRedirect } from '../../utils/toast.js';
 import { createFootImage } from '../../utils/footPrint.js';
 
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const url = new URL(`${API_BASE_URL}/posts`);
+                const url = new URL(`${API_BASE_URL}/posts`, window.location.origin);
                 url.searchParams.append('size', '20'); // 컨트롤러의 기본값
                 if (cursorId) { // 첫 페이지 로드가 아닐 때만 cursorId 추가
                     url.searchParams.append('cursorId', cursorId);
