@@ -47,6 +47,7 @@ function loadHeader() {
                 activateDropdown();
                 setupLogoutButton();
                 updateProfileImage(); // 프로필 이미지 설정
+                setupHeaderTitleClick(); // 헤더 타이틀 클릭 이벤트 설정
             }, 100); // 약간의 지연을 두어 DOM이 완전히 렌더링되도록 함
         })
         .catch(error => {
@@ -264,4 +265,15 @@ function handleLogout() {
     
     // 메인 페이지(게시물 목록 페이지)로 즉시 이동
     window.location.href = '/';
+}
+
+// 헤더 타이틀 클릭 시 게시물 목록으로 이동
+function setupHeaderTitleClick() {
+    const headerTitle = document.querySelector('.header-title');
+    if (headerTitle) {
+        headerTitle.style.cursor = 'pointer';
+        headerTitle.addEventListener('click', () => {
+            window.location.href = '/';
+        });
+    }
 }
