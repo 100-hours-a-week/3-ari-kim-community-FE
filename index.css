@@ -167,7 +167,7 @@ main.container {
     flex-shrink: 0;
     margin-top: 15px;
     margin-bottom: 15px;
-    align-self: flex-end; /* 버튼만 오른쪽 정렬 */
+    align-self: center; /* 버튼 가운데 정렬 */
 }
 
 .create-post-button:hover {
@@ -334,6 +334,7 @@ main.container {
     font-size: 16px;
     line-height: 1.6;
     min-height: 150px; /* 예시 높이 */
+    white-space: pre-wrap; /* 들여쓰기 및 줄바꿈 유지 */
 }
 
 /* 통계 섹션 */
