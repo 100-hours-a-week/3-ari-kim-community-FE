@@ -21,6 +21,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }  
             return num;
         }
+        
+        // 한국 시간으로 포맷팅
+        function formatKoreanDateTime(dateString) {
+            // ISO 문자열을 파싱하여 Date 객체 생성
+            const date = new Date(dateString);
+            
+            // 한국 시간대(Asia/Seoul)로 변환하여 포맷팅
+            // toLocaleString이 timeZone 옵션을 지원하므로 직접 사용
+            return date.toLocaleString('ko-KR', { 
+                timeZone: 'Asia/Seoul',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
 
         // 서버에서 게시글 데이터를 가져옴
         async function fetchPosts(cursorId) {
@@ -32,10 +50,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const url = new URL(`${API_BASE_URL}/posts`, window.location.origin);
-                url.searchParams.append('size', '20'); // 컨트롤러의 기본값
+                // API URL 구성 (상대 경로 사용)
+                let url = `${API_BASE_URL}/posts?size=10`;
                 if (cursorId) { // 첫 페이지 로드가 아닐 때만 cursorId 추가
-                    url.searchParams.append('cursorId', cursorId);
+                    url += `&cursorId=${cursorId}`;
                 }
 
                 const response = await fetch(url);
@@ -76,15 +94,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         emptyMessage.style.fontSize = '16px';
                         emptyMessage.textContent = '아직 나눈 이야기가 없어요!';
                         postListContainer.appendChild(emptyMessage);
-                    } else {
-                        // 게시물이 있으면 로더 숨김 (추가 로드 시 다시 표시됨)
-                        loader.style.display = 'none';
+                    } else if (!hasMorePosts) {
+                        // 게시물이 있고 마지막인 경우
+                        loader.style.display = 'block';
+                        loader.innerHTML = '<p style="text-align: center; color: #868e96; padding: 20px;">마지막 게시물입니다</p>';
                     }
-                }
-                
-                // 더 이상 로드할 게 없으면 로더 숨김
-                if (!hasMorePosts) {
-                    loader.style.display = 'none';
+                    // 게시물이 있고 더 있을 경우는 observer 설정 함수에서 처리
                 }   
                 
                 // 다음 요청에 사용할 '커서 ID' 업데이트
@@ -154,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span>댓글 ${formatNumber(post.commentCount)}</span>
                         <span>조회수 ${formatNumber(post.viewCount)}</span>
                     </div>
-                    <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
+                    <span class="post-date">${formatKoreanDateTime(post.createdAt)}</span>
                 </div>
                 <div class="post-footer">
                     <div class="post-author">
@@ -188,28 +203,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 추가 게시물 로드
         async function loadMorePosts() {
+            if (isLoading || !hasMorePosts) return [];
+            
             const posts = await fetchPosts(currentCursorId); 
             posts.forEach(post => {
                 const postElement = createPostElement(post);
                 postListContainer.appendChild(postElement);
             });
+            
+            // 마지막 게시물인 경우 메시지 표시
+            if (!hasMorePosts && loader) {
+                loader.style.display = 'block';
+                loader.innerHTML = '<p style="text-align: center; color: #868e96; padding: 20px;">마지막 게시물입니다</p>';
+            }
+            
             return posts; // Promise 반환을 위해 추가
         }
 
-        // 인피니티 스크롤
-        const observer = new IntersectionObserver((entries) => {
-            // entries[0].isIntersecting이 true이면 loader가 화면에 보인다는 의미
-            // 첫 페이지 로드가 완료되고, 더 불러올 게 있을 때만 실행
-            if (entries[0].isIntersecting && !isLoading && hasMorePosts && !isFirstLoad) {
-                loader.style.display = 'block'; // 추가 로드 시 로더 표시
-                loadMorePosts();
-            }
-        }, {
-            threshold: 1.0 // loader가 100% 보일 때 실행
-        });
-
-        observer.observe(loader);
-        
         // 저장된 스크롤 위치 복원
         function restoreScrollPosition() {
             const savedScrollPosition = sessionStorage.getItem('postListScrollPosition');
@@ -232,10 +242,52 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // 게시물 observer 설정 함수
+        function setupPostObserver() {
+            if (!loader) return;
+            
+            // 기존 observer 제거 (있다면)
+            if (window.postObserver) {
+                window.postObserver.disconnect();
+            }
+            
+            if (!hasMorePosts) {
+                // 첫 로드에서 이미 모든 게시물을 가져온 경우
+                // setupPostObserver가 호출되기 전에 fetchPosts에서 이미 처리했지만,
+                // 확인을 위해 다시 설정
+                if (loader && loader.style.display !== 'none') {
+                    loader.innerHTML = '<p style="text-align: center; color: #868e96; padding: 20px;">마지막 게시물입니다</p>';
+                }
+                return;
+            }
+            
+            // 추가 게시물이 있는 경우 observer 설정
+            loader.innerHTML = '<p>loading...</p>'; // 로더 텍스트 초기화
+            loader.style.display = 'block'; // observer가 작동하려면 보여야 함
+            
+            const observer = new IntersectionObserver((entries) => {
+                // entries[0].isIntersecting이 true이면 loader가 화면에 보인다는 의미
+                // 더 불러올 게 있을 때만 실행
+                if (entries[0].isIntersecting && !isLoading && hasMorePosts) {
+                    loader.style.display = 'block'; // 추가 로드 시 로더 표시
+                    loader.innerHTML = '<p>loading...</p>'; // 로더 텍스트 복원
+                    loadMorePosts();
+                }
+            }, {
+                threshold: 0.1 // loader가 10% 보이면 실행 (더 빠른 로딩)
+            });
+
+            observer.observe(loader);
+            window.postObserver = observer; // 전역으로 저장하여 나중에 disconnect 가능하게
+        }
+        
         // 첫 페이지 로드
         loadMorePosts().then(() => {
             // 게시물 로드 완료 후 스크롤 위치 복원
             restoreScrollPosition();
+            
+            // 인피니티 스크롤 observer 설정 (첫 로드 완료 후)
+            setupPostObserver();
         });
 
         // 게시물 작성 버튼 클릭 이벤트

@@ -38,6 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let postId = null; // 현재 게시물 ID
     let isEditingCommentId = null; // 수정 중인 댓글 ID
     
+    // 댓글 인피니티 스크롤링 관련 변수
+    let currentCommentCursorId = null;
+    let isLoadingComments = false;
+    let hasMoreComments = true;
+    let isFirstCommentLoad = true;
 
     // --- 헬퍼 함수 ---
 
@@ -47,6 +52,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return (num / 1000).toFixed(0) + 'k';
         }  
         return num;
+    }
+    
+    // 한국 시간으로 포맷팅
+    function formatKoreanDateTime(dateString) {
+        const date = new Date(dateString);
+        // UTC 시간을 한국 시간으로 변환 (UTC+9)
+        const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+        return koreaTime.toLocaleString('ko-KR', { 
+            timeZone: 'Asia/Seoul',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
 
     // --- 데이터 로드 및 렌더링 ---
@@ -111,7 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPost(post) {
         postTitle.textContent = post.title;
         postAuthor.textContent = post.nickname; 
-        postDate.textContent = new Date(post.createdAt).toLocaleString(); 
+        // 한국 시간으로 변환하여 표시
+        const createdDate = formatKoreanDateTime(post.createdAt);
+        const modifiedTag = post.isModified ? ' (수정됨)' : '';
+        postDate.textContent = createdDate + modifiedTag;
         postContent.textContent = post.content;
         
         // 작성자 프로필 이미지 표시
@@ -173,10 +196,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 댓글 목록 불러오기
-    async function fetchComments(postId) {
+    async function fetchComments(postId, cursorId, size = 10) {
+        isLoadingComments = true;
+        const commentLoader = document.getElementById('comment-loader');
+        
+        // 첫 페이지 로드일 때만 로더 표시
+        if (isFirstCommentLoad && commentLoader) {
+            commentLoader.style.display = 'block';
+        }
+        
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await fetch(`${API_BASE_URL}/posts/${postId}/comments`, {
+            // API URL 구성 (상대 경로 사용)
+            let url = `${API_BASE_URL}/posts/${postId}/comments?size=${size}`;
+            if (cursorId) {
+                url += `&cursorId=${cursorId}`;
+            }
+            
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -197,23 +234,51 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok && apiResponse && (apiResponse.status === 200 || response.status === 200)) {
                 const slice = apiResponse.data;
                 const comments = slice && slice.content ? slice.content : [];
+                
+                // 첫 페이지 로드 완료 후 처리
+                if (isFirstCommentLoad) {
+                    isFirstCommentLoad = false;
+                    // 로더는 observer 설정 함수에서 처리하므로 여기서 숨기지 않음
+                }
+                
+                // 다음 페이지 여부 확인
+                hasMoreComments = slice ? !slice.last : false;
+                
+                // 더 이상 로드할 게 없으면 메시지 표시 (observer 설정 함수에서 처리)
+                // 여기서는 로더를 숨기지 않음
+                
+                // 다음 요청에 사용할 커서 ID 업데이트
+                if (comments.length > 0) {
+                    currentCommentCursorId = comments[comments.length - 1].commentId;
+                }
+                
                 return comments;
             } else {
                 throw new Error(apiResponse?.message || '댓글을 불러올 수 없습니다.');
             }
         } catch (error) {
             console.error('댓글 목록 불러오기 오류:', error);
+            if (commentLoader) {
+                commentLoader.style.display = 'none';
+            }
+            hasMoreComments = false;
             return [];
+        } finally {
+            isLoadingComments = false;
         }
     }
 
-    // 댓글 목록 렌더링
-    function renderComments(comments) {
+    // 댓글 목록 렌더링 (추가 모드)
+    function renderComments(comments, isAppend = false) {
         if (!commentListContainer) return;
         
-        commentListContainer.innerHTML = '';
+        // 첫 로드 시에만 초기화
+        if (!isAppend) {
+            commentListContainer.innerHTML = '';
+        }
         
-        if (comments.length === 0) {
+        // 댓글이 없고 첫 로드일 때만 메시지 표시
+        if (comments.length === 0 && !isAppend) {
             commentListContainer.innerHTML = '<p style="text-align: center; color: #868e96; padding: 20px;">댓글이 없습니다.</p>';
             return;
         }
@@ -222,6 +287,56 @@ document.addEventListener('DOMContentLoaded', () => {
             const commentElement = createCommentElement(comment);
             commentListContainer.appendChild(commentElement);
         });
+    }
+    
+    // 추가 댓글 로드
+    async function loadMoreComments() {
+        if (!postId || isLoadingComments || !hasMoreComments) return;
+        
+        const comments = await fetchComments(postId, currentCommentCursorId, 10);
+        if (comments.length > 0) {
+            renderComments(comments, true);
+        }
+        
+        // 마지막 댓글인 경우 메시지 표시
+        const commentLoader = document.getElementById('comment-loader');
+        if (!hasMoreComments && commentLoader) {
+            commentLoader.style.display = 'block';
+            commentLoader.innerHTML = '<p style="text-align: center; color: #868e96; padding: 20px;">마지막 댓글입니다</p>';
+        }
+    }
+    
+    // 댓글 observer 설정 함수
+    function setupCommentObserver() {
+        const commentLoader = document.getElementById('comment-loader');
+        if (!commentLoader) return;
+        
+        // 기존 observer 제거 (있다면)
+        if (window.commentObserver) {
+            window.commentObserver.disconnect();
+        }
+        
+        if (!hasMoreComments) {
+            // 첫 로드에서 이미 모든 댓글을 가져온 경우
+            commentLoader.style.display = 'block';
+            commentLoader.innerHTML = '<p style="text-align: center; color: #868e96; padding: 20px;">마지막 댓글입니다</p>';
+        } else {
+            // 추가 댓글이 있는 경우 observer 설정
+            commentLoader.innerHTML = '<p>loading...</p>'; // 로더 텍스트 초기화
+            commentLoader.style.display = 'block'; // observer가 작동하려면 보여야 함
+            
+            const commentObserver = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !isLoadingComments && hasMoreComments && !isFirstCommentLoad) {
+                    commentLoader.style.display = 'block';
+                    commentLoader.innerHTML = '<p>loading...</p>'; // 로더 텍스트 복원
+                    loadMoreComments();
+                }
+            }, {
+                threshold: 0.1 // 더 빠른 로딩을 위해 10% 보이면 실행
+            });
+            commentObserver.observe(commentLoader);
+            window.commentObserver = commentObserver; // 전역으로 저장하여 나중에 disconnect 가능하게
+        }
     }
 
     // 개별 댓글 HTML 요소 생성
@@ -246,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="post-author-info">
                     <div class="author-avatar"></div>
                     <span class="author-name">${comment.nickname}</span>
-                    <span class="post-date">${new Date(comment.createAt).toLocaleString()}</span>
+                    <span class="post-date">${formatKoreanDateTime(comment.createAt)}</span>
                     ${modifiedTag}
                 </div>
                 ${actionsHTML}
@@ -434,9 +549,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         commentTextarea.value = '';
                         commentSubmitBtn.disabled = true;
                         
-                        // 댓글 목록 다시 불러오기
-                        const comments = await fetchComments(postId);
-                        renderComments(comments);
+                        // 댓글 목록 다시 불러오기 (초기화)
+                        currentCommentCursorId = null;
+                        hasMoreComments = true;
+                        isFirstCommentLoad = true;
+                        const comments = await fetchComments(postId, null, 10);
+                        renderComments(comments, false);
+                        setupCommentObserver(); // observer 재설정
                         
                         showToast('댓글이 수정되었습니다.');
                     } else {
@@ -478,13 +597,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         commentTextarea.value = '';
                         commentSubmitBtn.disabled = true;
                         
-                        // 댓글 목록 다시 불러오기
-                        const comments = await fetchComments(postId);
-                        renderComments(comments);
+                        // 댓글 목록 다시 불러오기 (초기화)
+                        currentCommentCursorId = null;
+                        hasMoreComments = true;
+                        isFirstCommentLoad = true;
+                        const comments = await fetchComments(postId, null, 10);
+                        renderComments(comments, false);
+                        setupCommentObserver(); // observer 재설정
                         
-                        // 댓글 수 업데이트
-                        if (commentCount) {
-                            commentCount.textContent = formatNumber(comments.length);
+                        // 댓글 수 업데이트는 게시물 정보에서 가져옴
+                        const updatedPost = await fetchPostDetails(postId);
+                        if (updatedPost && commentCount) {
+                            commentCount.textContent = formatNumber(updatedPost.commentCount || 0);
                         }
                     } else {
                         alert('댓글 등록에 실패했습니다.');
@@ -591,13 +715,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('댓글 삭제에 실패했습니다.');
                 }
                 
-                // 댓글 목록 다시 불러오기
-                const comments = await fetchComments(postId);
-                renderComments(comments);
+                // 댓글 목록 다시 불러오기 (초기화)
+                currentCommentCursorId = null;
+                hasMoreComments = true;
+                isFirstCommentLoad = true;
+                const comments = await fetchComments(postId, null, 10);
+                renderComments(comments, false);
+                setupCommentObserver(); // observer 재설정
                 
-                // 댓글 수 업데이트
-                if (commentCount) {
-                    commentCount.textContent = formatNumber(comments.length);
+                // 댓글 수 업데이트는 게시물 정보에서 가져옴
+                const updatedPost = await fetchPostDetails(postId);
+                if (updatedPost && commentCount) {
+                    commentCount.textContent = formatNumber(updatedPost.commentCount || 0);
                 }
                 
                 deleteCommentModal.classList.add('modal-hidden');
@@ -645,9 +774,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (post) { 
             renderPost(post);
             
-            // 댓글 목록 불러오기
-            const comments = await fetchComments(postId);
-            renderComments(comments);
+            // 댓글 목록 첫 로드
+            const comments = await fetchComments(postId, null, 10);
+            renderComments(comments, false);
+            
+            // 댓글 인피니티 스크롤링 설정
+            setupCommentObserver();
             
             // 좋아요 상태 초기화 (GET 요청으로 조회만 수행, 토글하지 않음)
             const accessToken = localStorage.getItem('accessToken');

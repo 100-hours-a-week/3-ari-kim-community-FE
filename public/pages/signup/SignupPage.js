@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '../../utils/config.js';
 import { validateEmail, validatePassword, validatePasswordCheck, validateNickname } from '../../utils/validation.js';
 import { uploadFileToS3 } from '../../utils/s3Upload.js';
+import { showToastAfterRedirect } from '../../utils/toast.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname.includes('/signup') || window.location.pathname.includes('SignupPage.html')) {
@@ -205,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // 실패 응답: !response.ok 또는 data.status !== 200
                     if (response.ok && data && (data.status === 200 || response.status === 200)) {
                         // 회원가입 성공
-                        alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+                        showToastAfterRedirect('회원가입이 완료되었습니다.');
                         window.location.href = '/login';
                     } else {
                         // 서버측 유효성 검사 실패 (예: 중복 이메일, 닉네임)
