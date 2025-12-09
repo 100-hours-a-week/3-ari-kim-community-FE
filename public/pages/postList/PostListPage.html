@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>게시물 목록</title>
     <link rel="stylesheet" href="../../../index.css">
+    <style>
+        /* FOUC 방지를 위한 초기 스타일 */
+        body { visibility: hidden; }
+    </style>
 </head>
 <body>
 
@@ -30,4 +34,11 @@
 
     <script src="/client.js" type="module"></script>
     <script src="/pages/postList/PostListPage.js" type="module"></script>
+    <script>
+        // CSS 로드 후 body 표시
+        window.addEventListener('load', function() {
+            document.body.style.visibility = 'visible';
+        });
+    </script>
+</body>
 </html>
