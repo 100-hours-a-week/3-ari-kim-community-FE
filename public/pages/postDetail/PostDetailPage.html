@@ -48,12 +48,16 @@
 
         <section class="comment-form-container">
             <form id="comment-form">
-                <textarea id="comment-textarea" placeholder="댓글을 남겨주세요"></textarea>
+                <textarea id="comment-textarea" placeholder="댓글을 남겨주세요 (최대 500자)" maxlength="500"></textarea>
                 <button id="comment-submit-btn" type="submit" class="form-button" disabled>댓글 등록</button>
             </form>
         </section>
 
         <section id="comment-list" class="comment-list-container"></section>
+        
+        <div id="comment-loader" class="loader" style="display: none;">
+            <p>loading...</p>
+        </div>
     </main>
 
     <div id="delete-post-modal" class="modal-overlay modal-hidden">
