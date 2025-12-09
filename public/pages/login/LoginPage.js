@@ -11,9 +11,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const passwordHelper = document.getElementById('password-helper');
         const loginForm = document.getElementById('login-form');
 
-        // 로그인 버튼 활성화
+        // 로그인 버튼 활성화 (이메일만 검증, 비밀번호는 형식 검증 제외)
         function updateLoginButtonState() {
-            loginButton.disabled = !(validateEmail(emailInput, emailHelper) && validatePassword(passwordInput, passwordHelper));
+            const emailValid = validateEmail(emailInput, emailHelper);
+            const hasPassword = passwordInput.value.trim().length > 0;
+            loginButton.disabled = !(emailValid && hasPassword);
         }
 
         // 유효성 검사 및 버튼 상태 업데이트
