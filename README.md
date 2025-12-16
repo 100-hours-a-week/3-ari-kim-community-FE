@@ -26,3 +26,4 @@ DevOps/Infra :
 
 ## 🔻시연 영상
 
+[![Video Label](http://img.youtube.com/vi/jDTwsMK051M/0.jpg)](https://youtu.be/jDTwsMK051M)
